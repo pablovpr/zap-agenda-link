@@ -1,10 +1,12 @@
-
 import { parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { toZonedTime, fromZonedTime, format } from 'date-fns-tz';
 
 // Timezone do Brasil
 export const BRAZIL_TIMEZONE = 'America/Sao_Paulo';
+
+// Re-export format from date-fns-tz for convenience
+export { format };
 
 /**
  * Converte uma data UTC para o horário de Brasília
