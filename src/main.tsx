@@ -5,10 +5,6 @@ import App from './App.tsx';
 import './index.css';
 import { loadSavedTheme, applyTheme } from './utils/themes';
 
-// CONFIGURAR TIMEZONE PADRÃO PARA BRASIL
-// Definir timezone global para a aplicação
-process.env.TZ = 'America/Sao_Paulo';
-
 // Aplicar tema salvo ao carregar a aplicação
 const savedTheme = loadSavedTheme();
 applyTheme(savedTheme);
