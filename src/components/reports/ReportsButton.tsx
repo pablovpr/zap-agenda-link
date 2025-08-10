@@ -8,7 +8,7 @@ import { FileText, Download, MessageCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { format } from 'date-fns-tz';
 import { ptBR } from 'date-fns/locale';
 
 const ReportsButton = () => {
