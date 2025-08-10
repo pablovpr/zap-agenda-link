@@ -1,7 +1,8 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { CompanySettings, Profile, Service } from '@/types/publicBooking';
 import { Professional } from '@/services/professionalsService';
-import { getNowInBrazil, getTodayInBrazil, getCurrentTimeInBrazil } from '@/utils/timezone';
+import { getNowInBrazil, getTodayInBrazil, getCurrentTimeInBrazil, format } from '@/utils/timezone';
 
 export const loadCompanyDataBySlug = async (companySlug: string) => {
   if (!companySlug || companySlug.trim() === '') {
@@ -86,58 +87,7 @@ export const fetchActiveProfessionals = async (companyId: string): Promise<Profe
 };
 
 /**
- * SISTEMA DE BLOQUEIO DE HORÁRIOS - LÓGICA CORRIGIDA
- * 
- * Regras específicas de bloqueio:
- * - Serviço 30min: bloqueia APENAS o horário selecionado
- * - Serviço 60min: bloqueia o horário selecionado + o próximo (30min depois)
- * - Serviços maiores: bloqueia todos os slots necessários
- */
-const generateBlockedTimeSlots = (
-  bookedAppointments: Array<{
-    appointment_time: string;
-    duration?: number;
-    status: string;
-    services?: { duration: number };
-  }>
-): Set<string> => {
-  const blockedSlots = new Set<string>();
-
-  for (const appointment of bookedAppointments) {
-    const startTime = appointment.appointment_time.substring(0, 5); // HH:mm
-    // Priorizar duração do serviço, depois do appointment, depois padrão 60min
-    const duration = appointment.services?.duration || appointment.duration || 60;
-
-    // Converter horário para minutos
-    const [hours, minutes] = startTime.split(':').map(Number);
-    const startMinutes = hours * 60 + minutes;
-
-    // LÓGICA CORRIGIDA: Calcular slots baseado na duração específica
-    let slotsToBlock = 1; // Por padrão, bloqueia apenas 1 slot
-    
-    if (duration === 30) {
-      slotsToBlock = 1; // 30min = apenas o horário selecionado
-    } else if (duration === 60) {
-      slotsToBlock = 2; // 60min = horário selecionado + próximo
-    } else {
-      slotsToBlock = Math.ceil(duration / 30); // Para durações maiores
-    }
-
-    for (let i = 0; i < slotsToBlock; i++) {
-      const slotMinutes = startMinutes + (i * 30);
-      const slotHours = Math.floor(slotMinutes / 60);
-      const slotMins = slotMinutes % 60;
-      const slot = `${slotHours.toString().padStart(2, '0')}:${slotMins.toString().padStart(2, '0')}`;
-
-      blockedSlots.add(slot);
-    }
-  }
-
-  return blockedSlots;
-};
-
-/**
- * GERADOR SIMPLIFICADO DE HORÁRIOS - VERSÃO CORRIGIDA
+ * Gera horários disponíveis considerando timezone do Brasil
  */
 const generateSimpleTimeSlots = (
   startTime: string,
@@ -183,13 +133,13 @@ const generateSimpleTimeSlots = (
     }
   }
 
-  // Gerar slots bloqueados com lógica corrigida
+  // Gerar slots bloqueados
   const blockedSlots = new Set<string>();
   for (const apt of bookedAppointments) {
     const aptTime = normalizeTime(apt.appointment_time);
     const duration = apt.duration || 60;
     
-    // LÓGICA CORRIGIDA: Bloquear slots baseado na duração específica
+    // Bloquear slots baseado na duração específica
     let slotsToBlock = 1; // Por padrão, bloqueia apenas 1 slot
     
     if (duration === 30) {
@@ -224,7 +174,7 @@ const generateSimpleTimeSlots = (
     const mins = minutes % 60;
     const timeSlot = `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}`;
     
-    // Verificar se é horário passado
+    // Verificar se é horário passado (apenas para hoje)
     if (isToday && currentTime) {
       const [currentHours, currentMinutes] = currentTime.split(':').map(Number);
       const currentTotalMin = currentHours * 60 + currentMinutes;
@@ -293,8 +243,6 @@ export const invalidateTimeSlotsCache = (companyId: string, date?: string) => {
 
 /**
  * FUNÇÃO PRINCIPAL - SISTEMA DE AGENDAMENTO CORRIGIDO
- * 
- * Versão simplificada e robusta que garante o funcionamento
  */
 export const checkAvailableTimes = async (
   companyId: string,
@@ -338,7 +286,7 @@ export const checkAvailableTimes = async (
       return [];
     }
 
-    // ETAPA 4: Buscar agendamentos (simplificado)
+    // ETAPA 4: Buscar agendamentos
     const { data: bookedAppointments } = await supabase
       .from('appointments')
       .select('appointment_time, duration, status')
@@ -346,7 +294,7 @@ export const checkAvailableTimes = async (
       .eq('appointment_date', selectedDate)
       .in('status', ['confirmed', 'completed']);
 
-    // ETAPA 5: Gerar horários (versão simplificada)
+    // ETAPA 5: Gerar horários
     const availableSlots = generateSimpleTimeSlots(
       dailySchedule.start_time,
       dailySchedule.end_time,

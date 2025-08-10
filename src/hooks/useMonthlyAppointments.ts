@@ -1,8 +1,9 @@
 
 import { useState, useEffect } from 'react';
-import { format, startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
+import { formatToBrasilia } from '@/utils/timezone';
 
 interface Appointment {
   id: string;
@@ -33,8 +34,8 @@ export const useMonthlyAppointments = (currentDate: Date) => {
     
     try {
       setLoading(true);
-      const startDate = format(monthStart, 'yyyy-MM-dd');
-      const endDate = format(monthEnd, 'yyyy-MM-dd');
+      const startDate = formatToBrasilia(monthStart, 'yyyy-MM-dd');
+      const endDate = formatToBrasilia(monthEnd, 'yyyy-MM-dd');
       
       console.log('Carregando agendamentos para o período:', startDate, 'até', endDate);
       
@@ -84,7 +85,7 @@ export const useMonthlyAppointments = (currentDate: Date) => {
   };
 
   const getAppointmentsForDate = (date: Date) => {
-    const dateStr = format(date, 'yyyy-MM-dd');
+    const dateStr = formatToBrasilia(date, 'yyyy-MM-dd');
     return appointments.filter(apt => apt.appointment_date === dateStr);
   };
 

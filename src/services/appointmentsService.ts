@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { format } from 'date-fns';
+import { getTodayInBrazil, formatToBrasilia } from '@/utils/timezone';
 
 interface TodayAppointment {
   id: string;
@@ -25,7 +25,7 @@ export const fetchTodayAppointments = async (userId: string): Promise<TodayAppoi
   // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 100));
 
-  const today = format(new Date(), 'yyyy-MM-dd');
+  const today = getTodayInBrazil();
   
   const { data: appointments, error } = await supabase
     .from('appointments')

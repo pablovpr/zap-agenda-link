@@ -1,6 +1,7 @@
+
 import { parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { utcToZonedTime, zonedTimeToUtc, format } from 'date-fns-tz';
+import { toZonedTime, fromZonedTime, format } from 'date-fns-tz';
 
 // Timezone do Brasil
 export const BRAZIL_TIMEZONE = 'America/Sao_Paulo';
@@ -10,14 +11,14 @@ export const BRAZIL_TIMEZONE = 'America/Sao_Paulo';
  */
 export const utcToBrazilTime = (utcDate: Date | string): Date => {
   const date = typeof utcDate === 'string' ? parseISO(utcDate) : utcDate;
-  return utcToZonedTime(date, BRAZIL_TIMEZONE);
+  return toZonedTime(date, BRAZIL_TIMEZONE);
 };
 
 /**
  * Converte uma data do horário de Brasília para UTC
  */
 export const brazilTimeToUtc = (brazilDate: Date): Date => {
-  return zonedTimeToUtc(brazilDate, BRAZIL_TIMEZONE);
+  return fromZonedTime(brazilDate, BRAZIL_TIMEZONE);
 };
 
 /**
@@ -65,7 +66,7 @@ export const convertBrasiliaToDatabase = (dateStr: string, timeStr: string): str
  * Obtém a data atual no horário de Brasília
  */
 export const getNowInBrazil = (): Date => {
-  return utcToZonedTime(new Date(), BRAZIL_TIMEZONE);
+  return toZonedTime(new Date(), BRAZIL_TIMEZONE);
 };
 
 /**
@@ -90,7 +91,7 @@ export const getCurrentTimeInBrazil = (): string => {
 export const brazilDateTimeToUtc = (dateStr: string, timeStr: string): Date => {
   // Criar data no horário de Brasília
   const brazilDateTime = new Date(`${dateStr}T${timeStr}:00`);
-  return zonedTimeToUtc(brazilDateTime, BRAZIL_TIMEZONE);
+  return fromZonedTime(brazilDateTime, BRAZIL_TIMEZONE);
 };
 
 /**

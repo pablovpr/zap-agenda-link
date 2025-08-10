@@ -1,7 +1,7 @@
 
-import { addDays, format, setHours, setMinutes } from 'date-fns';
+import { addDays, format as dateFormat, setHours, setMinutes } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { getNowInBrazil, formatToBrasilia } from '@/utils/timezone';
+import { getNowInBrazil, formatToBrasilia, format } from '@/utils/timezone';
 
 export const generateAvailableDates = (workingDays: number[], advanceBookingLimit: number) => {
   const dates = [];
@@ -37,7 +37,7 @@ export const generateTimeSlots = (
   const endTime = setMinutes(setHours(baseDate, endHour), endMinute);
   
   while (currentTime < endTime) {
-    const timeString = format(currentTime, 'HH:mm');
+    const timeString = dateFormat(currentTime, 'HH:mm');
     
     // Verificar se o horário não é durante o almoço (período completo)
     const isDuringLunch = isTimeDuringLunch(timeString, lunchBreakEnabled, lunchStartTime, lunchEndTime);
@@ -83,14 +83,9 @@ export const formatAppointmentDateWithWeekday = (date: string) => {
   // Usar timezone brasileiro para formatação com dia da semana
   const appointmentDate = new Date(date + 'T12:00:00'); // Meio-dia para evitar problemas de timezone
   
-  // Usar toLocaleDateString com timezone brasileiro
-  const formattedDate = appointmentDate.toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    timeZone: 'America/Sao_Paulo'
+  // Usar formatação com timezone brasileiro
+  return format(appointmentDate, "EEEE, dd 'de' MMMM 'de' yyyy", {
+    timeZone: 'America/Sao_Paulo',
+    locale: ptBR
   });
-  
-  return formattedDate;
 };
