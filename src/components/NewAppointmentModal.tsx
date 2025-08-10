@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -15,6 +16,7 @@ import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { ptBR } from 'date-fns/locale';
 import { supabase } from '@/integrations/supabase/client';
+import { formatToBrasilia } from '@/utils/timezone';
 
 interface NewAppointmentModalProps {
   isOpen: boolean;
@@ -182,7 +184,7 @@ const NewAppointmentModal = ({ isOpen, onClose, onSuccess }: NewAppointmentModal
 
     setLoadingTimes(true);
     try {
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd', { timeZone: 'America/Sao_Paulo' });
+      const formattedDate = formatToBrasilia(selectedDate, 'yyyy-MM-dd');
       
       // Import the updated checkAvailableTimes function
       const { checkAvailableTimes } = await import('@/services/publicBookingService');
@@ -255,7 +257,7 @@ const NewAppointmentModal = ({ isOpen, onClose, onSuccess }: NewAppointmentModal
       }
 
       // Create appointment
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd', { timeZone: 'America/Sao_Paulo' });
+      const formattedDate = formatToBrasilia(selectedDate, 'yyyy-MM-dd');
       const { error: appointmentError } = await supabase
         .from('appointments')
         .insert({

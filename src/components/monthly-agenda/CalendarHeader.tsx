@@ -3,6 +3,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { format, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { formatToBrasilia } from '@/utils/timezone';
 
 interface CalendarHeaderProps {
   currentDate: Date;
@@ -24,7 +25,7 @@ const CalendarHeader = ({ currentDate, onPreviousMonth, onNextMonth }: CalendarH
         </Button>
         <div className="text-center min-w-[120px] md:min-w-[140px]">
           <p className="font-medium text-gray-800 text-sm md:text-base">
-            {format(currentDate, 'MMMM yyyy', { locale: ptBR, timeZone: 'America/Sao_Paulo' })}
+            {formatToBrasilia(currentDate, 'MMMM yyyy', ptBR)}
           </p>
         </div>
         <Button variant="outline" size="sm" onClick={onNextMonth}>

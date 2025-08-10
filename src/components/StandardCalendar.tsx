@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { format, addDays, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, startOfWeek, endOfWeek, addMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { getNowInBrazil, getTodayInBrazil } from '@/utils/timezone';
+import { getNowInBrazil, getTodayInBrazil, formatToBrasilia } from '@/utils/timezone';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -51,7 +51,7 @@ const StandardCalendar = ({
     
     if (onDateSelect) {
       // Seleção imediata da data
-      const dateString = format(date, 'yyyy-MM-dd', { timeZone: 'America/Sao_Paulo' });
+      const dateString = formatToBrasilia(date, 'yyyy-MM-dd');
       onDateSelect(dateString);
       
       // Log para debug
@@ -112,7 +112,7 @@ const StandardCalendar = ({
         {calendarDays.map((date) => {
           const isCurrentMonth = isSameMonth(date, currentMonth);
           const isAvailable = isDateAvailable(date);
-          const isSelected = selectedDate === format(date, 'yyyy-MM-dd', { timeZone: 'America/Sao_Paulo' });
+          const isSelected = selectedDate === formatToBrasilia(date, 'yyyy-MM-dd');
           const isTodayDate = highlightToday && isToday(date);
           
           return (

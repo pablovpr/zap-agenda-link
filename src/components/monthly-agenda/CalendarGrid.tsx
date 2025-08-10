@@ -1,5 +1,6 @@
 
 import { format, eachDayOfInterval, isSameMonth, isToday } from 'date-fns';
+import { formatToBrasilia } from '@/utils/timezone';
 
 interface Appointment {
   id: string;
@@ -50,7 +51,7 @@ const CalendarGrid = ({ currentDate, calendarDays, getAppointmentsForDate, onDat
               onClick={() => isCurrentMonth && onDateClick(date)}
             >
               <div className="text-xs md:text-sm font-medium">
-                {format(date, 'd', { timeZone: 'America/Sao_Paulo' })}
+                {formatToBrasilia(date, 'd')}
               </div>
               {hasAppointments && isCurrentMonth && (
                 <div className="mt-1">
