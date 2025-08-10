@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -10,20 +9,23 @@ import { useAuth } from '@/hooks/useAuth';
 import { Store, AlertCircle } from 'lucide-react';
 import { fetchProfile, upsertProfile } from '@/services/profileService';
 import { createDefaultSettings } from '@/services/companySettingsService';
+import { useSubscription } from '@/hooks/useSubscription';
 
 const CompanySetup = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user, isLoading } = useAuth();
+  const { subscriptionData, loading: subscriptionLoading, checkingPayment, isSubscribed, createCheckoutSession } = useSubscription();
 
   const [companyName, setCompanyName] = useState('');
   const [businessType, setBusinessType] = useState('');
   const [loading, setLoading] = useState(false);
   const [checkingProfile, setCheckingProfile] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showPaymentSuccess, setShowPaymentSuccess] = useState(false);
 
   useEffect(() => {
-    if (isLoading) return;
+    if (isLoading || subscriptionLoading) return;
 
     if (!user) {
       console.log('No user found, redirecting to auth');
@@ -31,8 +33,35 @@ const CompanySetup = () => {
       return;
     }
 
+    // Check for payment success
+    const urlParams = new URLSearchParams(window.location.search);
+    const sessionId = urlParams.get('session_id');
+    const cancelled = urlParams.get('cancelled');
+    
+    if (sessionId) {
+      setShowPaymentSuccess(true);
+      // Clean URL
+      window.history.replaceState({}, '', '/company-setup');
+    } else if (cancelled) {
+      toast({
+        title: "Pagamento cancelado",
+        description: "O pagamento foi cancelado. Você pode tentar novamente.",
+        variant: "destructive",
+      });
+      // Clean URL
+      window.history.replaceState({}, '', '/company-setup');
+    }
+
     checkExistingProfile();
-  }, [user, isLoading, navigate]);
+  }, [user, isLoading, subscriptionLoading, navigate]);
+
+  // Redirect to main app if user has active subscription and complete profile
+  useEffect(() => {
+    if (isSubscribed && companyName.trim() && !showPaymentSuccess) {
+      console.log('User has active subscription and complete profile, redirecting to main app');
+      navigate('/', { replace: true });
+    }
+  }, [isSubscribed, companyName, showPaymentSuccess, navigate]);
 
   const checkExistingProfile = async () => {
     if (!user) return;
@@ -45,13 +74,7 @@ const CompanySetup = () => {
       const profile = await fetchProfile(user.id);
       console.log('Profile found:', profile);
       
-      if (profile?.company_name && profile.company_name.trim()) {
-        console.log('Profile is complete, redirecting to main app');
-        navigate('/', { replace: true });
-        return;
-      }
-      
-      // Profile exists but incomplete, pre-fill form
+      // Pre-fill form if profile exists
       if (profile) {
         if (profile.company_name) setCompanyName(profile.company_name);
         if (profile.business_type) setBusinessType(profile.business_type);
@@ -87,56 +110,68 @@ const CompanySetup = () => {
       return;
     }
 
-    if (loading) return;
+    if (loading || checkingPayment) return;
 
-    setLoading(true);
-    setError(null);
+    // If user already has active subscription, just save profile and redirect
+    if (isSubscribed) {
+      await saveProfileAndRedirect();
+      return;
+    }
 
+    // Create checkout session for payment
+    const checkoutUrl = await createCheckoutSession();
+    if (checkoutUrl) {
+      // Save profile data first
+      try {
+        setLoading(true);
+        const profileData = {
+          company_name: companyName.trim(),
+          business_type: businessType.trim() || null,
+        };
+        await upsertProfile(user.id, profileData);
+        console.log('Profile saved before payment redirect');
+      } catch (error: any) {
+        console.error('Error saving profile before payment:', error);
+        toast({
+          title: "Erro ao salvar dados",
+          description: "Não foi possível salvar os dados da empresa.",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Redirect to Stripe Checkout
+      console.log('Redirecting to Stripe Checkout:', checkoutUrl);
+      window.location.href = checkoutUrl;
+    }
+  };
+
+  const saveProfileAndRedirect = async () => {
     try {
-      console.log('Starting company setup process for user:', user.id);
-      
+      setLoading(true);
       const profileData = {
         company_name: companyName.trim(),
         business_type: businessType.trim() || null,
       };
 
-      console.log('Attempting to save profile with data:', profileData);
-      const profile = await upsertProfile(user.id, profileData);
-      console.log('Profile saved successfully:', profile);
-
-      // Create default company settings (non-blocking)
-      try {
-        console.log('Creating default company settings...');
-        await createDefaultSettings(user.id, companyName.trim());
-        console.log('Default settings created successfully');
-      } catch (settingsError: any) {
-        console.error('Error creating default settings (non-blocking):', settingsError);
-        toast({
-          title: "Parcialmente configurado",
-          description: "Empresa criada, mas algumas configurações serão definidas depois.",
-          variant: "default",
-        });
-      }
+      await upsertProfile(user.id, profileData);
+      await createDefaultSettings(user.id, companyName.trim());
 
       toast({
         title: "Empresa configurada com sucesso!",
         description: "Redirecionando para o painel principal...",
       });
 
-      // Redirect after success
       setTimeout(() => {
         navigate('/', { replace: true });
       }, 1500);
 
     } catch (error: any) {
-      console.error('Error in company setup:', error);
-      
-      const errorMessage = error?.message || "Erro inesperado ao configurar empresa";
-      setError(errorMessage);
-      
+      console.error('Error saving profile:', error);
       toast({
         title: "Erro ao configurar empresa",
-        description: errorMessage,
+        description: error.message || "Erro inesperado ao configurar empresa",
         variant: "destructive",
       });
     } finally {
@@ -144,7 +179,7 @@ const CompanySetup = () => {
     }
   };
 
-  if (isLoading || checkingProfile) {
+  if (isLoading || subscriptionLoading || checkingProfile) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
@@ -159,6 +194,40 @@ const CompanySetup = () => {
     return null; // Will redirect via useEffect
   }
 
+  // Show payment success message
+  if (showPaymentSuccess) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg">
+          <CardHeader className="text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Store className="w-8 h-8 text-green-600" />
+            </div>
+            <CardTitle className="text-2xl font-bold text-green-600">Pagamento Realizado!</CardTitle>
+            <p className="text-gray-600">Sua assinatura foi ativada com sucesso</p>
+          </CardHeader>
+          
+          <CardContent className="text-center space-y-4">
+            <p className="text-gray-700">
+              Obrigado por assinar nosso plano Premium! Sua conta está ativa e você já pode acessar todas as funcionalidades.
+            </p>
+            <Button 
+              onClick={() => {
+                setShowPaymentSuccess(false);
+                if (companyName.trim()) {
+                  navigate('/', { replace: true });
+                }
+              }}
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+            >
+              Continuar
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-lg">
@@ -167,7 +236,12 @@ const CompanySetup = () => {
             <Store className="w-8 h-8 text-green-600" />
           </div>
           <CardTitle className="text-2xl font-bold text-gray-800">Configure sua Empresa</CardTitle>
-          <p className="text-gray-600">Vamos começar configurando as informações básicas da sua empresa</p>
+          <p className="text-gray-600">
+            {isSubscribed 
+              ? "Complete as informações da sua empresa" 
+              : "Configure sua empresa e ative sua assinatura"
+            }
+          </p>
         </CardHeader>
         
         <CardContent>
@@ -181,6 +255,18 @@ const CompanySetup = () => {
             </div>
           )}
 
+          {!isSubscribed && (
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h3 className="font-medium text-blue-800 mb-2">Plano Premium - R$ 29,90/mês</h3>
+              <ul className="text-sm text-blue-700 space-y-1">
+                <li>• Agendamentos ilimitados</li>
+                <li>• Página de agendamento personalizada</li>
+                <li>• Relatórios e estatísticas</li>
+                <li>• Suporte prioritário</li>
+              </ul>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="company-name">Nome da Empresa *</Label>
@@ -191,7 +277,7 @@ const CompanySetup = () => {
                 onChange={(e) => setCompanyName(e.target.value)}
                 placeholder="Ex: Salão Beleza & Estilo"
                 required
-                disabled={loading}
+                disabled={loading || checkingPayment}
                 maxLength={100}
                 className={error ? 'border-red-300' : ''}
               />
@@ -208,7 +294,7 @@ const CompanySetup = () => {
                 value={businessType}
                 onChange={(e) => setBusinessType(e.target.value)}
                 placeholder="Ex: Salão de Beleza, Barbearia, Clínica"
-                disabled={loading}
+                disabled={loading || checkingPayment}
                 maxLength={50}
               />
               <p className="text-xs text-gray-500">
@@ -220,12 +306,25 @@ const CompanySetup = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-green-600 hover:bg-green-700 text-white"
-                disabled={loading || !companyName.trim()}
+                disabled={loading || checkingPayment || !companyName.trim()}
                 size="lg"
               >
-                {loading ? "Configurando..." : "Continuar"}
+                {checkingPayment 
+                  ? "Processando pagamento..." 
+                  : isSubscribed 
+                    ? (loading ? "Configurando..." : "Finalizar Configuração")
+                    : "Continuar para Pagamento"
+                }
               </Button>
             </div>
+
+            {isSubscribed && (
+              <div className="text-center">
+                <p className="text-sm text-green-600 font-medium">
+                  ✓ Assinatura Premium Ativa
+                </p>
+              </div>
+            )}
 
             <div className="text-center">
               <p className="text-xs text-gray-500">

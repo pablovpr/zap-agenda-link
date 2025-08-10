@@ -104,7 +104,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const signUp = async (email: string, password: string, name: string): Promise<{ error?: Error }> => {
     try {
       setIsLoading(true);
-      const redirectUrl = `${window.location.origin}/`;
+      const redirectUrl = `${window.location.origin}/company-setup`;
       
       const { error } = await supabase.auth.signUp({
         email,

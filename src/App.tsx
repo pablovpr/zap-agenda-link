@@ -1,87 +1,39 @@
 
-import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
-import PWAInstallPrompt from "@/components/PWAInstallPrompt";
+import SubscriptionGuard from "@/components/SubscriptionGuard";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import CompanySetup from "./pages/CompanySetup";
 import PublicBooking from "./pages/PublicBooking";
-import PublicBookingRedirect from "./components/PublicBookingRedirect";
-import CreateTestCompany from "./pages/CreateTestCompany";
-import DebugPublicBooking from "./pages/DebugPublicBooking";
-import FixPabloLink from "./pages/FixPabloLink";
-import TimezoneTest from "./pages/TimezoneTest";
-import ThemeTestPage from "./pages/ThemeTestPage";
-import ErrorTestPage from "./pages/ErrorTestPage";
-import CoverSettings from "./pages/CoverSettings";
-import ThemeCustomization from "./pages/ThemeCustomization";
-import BookingSystemTest from "./pages/BookingSystemTest";
-import ScheduleDebugPage from "./pages/ScheduleDebugPage";
-import QuickScheduleTest from "./pages/QuickScheduleTest";
-import PublicBookingTest from "./pages/PublicBookingTest";
-import TimeSlotDebug from "./pages/TimeSlotDebug";
 import NotFound from "./pages/NotFound";
-import FinalTimezoneDebug from "./components/debug/FinalTimezoneDebug";
 
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      retry: 1,
-      refetchOnWindowFocus: false,
-    },
-  },
-});
+const queryClient = new QueryClient();
 
-const App: React.FC = () => {
-  return (
-    <QueryClientProvider client={queryClient}>
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AuthProvider>
       <TooltipProvider>
-        <AuthProvider>
-          <BrowserRouter>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <SubscriptionGuard>
             <Routes>
-              {/* Rotas administrativas e de sistema */}
+              <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/company-setup" element={<CompanySetup />} />
-              <Route path="/create-test-company" element={<CreateTestCompany />} />
-              <Route path="/fix-pablo" element={<FixPabloLink />} />
-              <Route path="/debug/:companySlug" element={<DebugPublicBooking />} />
-              <Route path="/timezone-test" element={<TimezoneTest />} />
-              <Route path="/theme-test" element={<ThemeTestPage />} />
-              <Route path="/error-test" element={<ErrorTestPage />} />
-              <Route path="/cover-settings" element={<CoverSettings />} />
-              <Route path="/theme-customization" element={<ThemeCustomization />} />
-              <Route path="/booking-system-test" element={<BookingSystemTest />} />
-              <Route path="/schedule-debug" element={<ScheduleDebugPage />} />
-              <Route path="/quick-schedule-test" element={<QuickScheduleTest />} />
-              <Route path="/public-booking-test" element={<PublicBookingTest />} />
-              <Route path="/timeslot-debug" element={<TimeSlotDebug />} />
-              <Route path="/timezone-final-test" element={<FinalTimezoneDebug />} />
-              
-              {/* Redirecionamento para compatibilidade com links antigos */}
-              <Route path="/public/:companySlug" element={<PublicBookingRedirect />} />
-              
-              {/* Página inicial */}
-              <Route path="/" element={<Index />} />
-              
-              {/* Nova rota principal para booking público (dominio.com/{slug}) */}
-              <Route path="/:companySlug" element={<PublicBooking />} />
-              
-              {/* Página 404 */}
+              <Route path="/b/:companySlug" element={<PublicBooking />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
-            <PWAInstallPrompt />
-          </BrowserRouter>
-          <Toaster />
-          <Sonner />
-        </AuthProvider>
+          </SubscriptionGuard>
+        </BrowserRouter>
       </TooltipProvider>
-    </QueryClientProvider>
-  );
-};
+    </AuthProvider>
+  </QueryClientProvider>
+);
 
 export default App;
