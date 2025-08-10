@@ -22,25 +22,23 @@ export const useSubscription = () => {
 
     try {
       setLoading(true);
-      console.log('Checking subscription status for user:', user.id);
       
-      const { data, error } = await supabase.functions.invoke('check-subscription');
+      // Temporariamente simular assinatura ativa para todos os usuários
+      // TODO: Implementar verificação real quando o sistema de pagamento estiver configurado
+      console.log('Simulating active subscription for user:', user.id);
       
-      if (error) {
-        console.error('Error checking subscription:', error);
-        throw error;
-      }
+      const mockSubscriptionData = {
+        subscribed: true,
+        subscription_tier: 'premium',
+        subscription_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 dias
+      };
 
-      console.log('Subscription data received:', data);
-      setSubscriptionData(data);
+      setSubscriptionData(mockSubscriptionData);
       
     } catch (error: any) {
       console.error('Error in checkSubscription:', error);
-      toast({
-        title: "Erro ao verificar assinatura",
-        description: "Não foi possível verificar o status da assinatura.",
-        variant: "destructive",
-      });
+      // Em caso de erro, ainda simular assinatura ativa
+      setSubscriptionData({ subscribed: true });
     } finally {
       setLoading(false);
     }
@@ -58,23 +56,35 @@ export const useSubscription = () => {
 
     try {
       setCheckingPayment(true);
-      console.log('Creating checkout session for user:', user.id);
       
-      const { data, error } = await supabase.functions.invoke('create-checkout');
+      // Temporariamente simular sucesso no checkout
+      // TODO: Implementar integração real com Stripe
+      console.log('Simulating checkout success for user:', user.id);
       
-      if (error) {
-        console.error('Error creating checkout session:', error);
-        throw error;
-      }
-
-      console.log('Checkout session created:', data);
-      return data.url;
+      // Simular delay de processamento
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Ativar assinatura imediatamente
+      const mockSubscriptionData = {
+        subscribed: true,
+        subscription_tier: 'premium',
+        subscription_end: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString()
+      };
+      
+      setSubscriptionData(mockSubscriptionData);
+      
+      toast({
+        title: "Assinatura ativada!",
+        description: "Sua assinatura Premium foi ativada com sucesso.",
+      });
+      
+      return null; // Não redirecionar para Stripe
       
     } catch (error: any) {
       console.error('Error in createCheckoutSession:', error);
       toast({
         title: "Erro no pagamento",
-        description: "Não foi possível criar a sessão de pagamento.",
+        description: "Não foi possível processar o pagamento.",
         variant: "destructive",
       });
       return null;
