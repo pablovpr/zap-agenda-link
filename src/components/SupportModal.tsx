@@ -3,55 +3,52 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Mail, MessageCircle, Copy, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
 interface SupportModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
-
-const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
-  const { toast } = useToast();
+const SupportModal = ({
+  isOpen,
+  onClose
+}: SupportModalProps) => {
+  const {
+    toast
+  } = useToast();
   const [emailCopied, setEmailCopied] = useState(false);
-
   const supportEmail = 'zapcomercios@gmail.com';
   const whatsappNumber = '5535991208159'; // Formato internacional
   const whatsappDisplayNumber = '(35) 99120-8159';
-
   const handleCopyEmail = async () => {
     try {
       await navigator.clipboard.writeText(supportEmail);
       setEmailCopied(true);
       toast({
         title: "Email copiado!",
-        description: "O email foi copiado para a área de transferência.",
+        description: "O email foi copiado para a área de transferência."
       });
       setTimeout(() => setEmailCopied(false), 2000);
     } catch (error) {
       toast({
         title: "Erro",
         description: "Não foi possível copiar o email.",
-        variant: "destructive",
+        variant: "destructive"
       });
     }
   };
-
   const handleOpenEmail = () => {
     const subject = encodeURIComponent('Suporte ZapAgenda');
     const body = encodeURIComponent('Olá, preciso de ajuda com o ZapAgenda.\n\nDescreva sua dúvida ou problema aqui...');
     window.open(`mailto:${supportEmail}?subject=${subject}&body=${body}`, '_blank');
   };
-
   const handleOpenWhatsApp = () => {
     const message = encodeURIComponent('Olá! Preciso de ajuda com o ZapAgenda.');
     window.open(`https://wa.me/${whatsappNumber}?text=${message}`, '_blank');
   };
-
-  return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+  return <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-lg max-w-[90vw] bg-white border border-gray-200">
         <DialogHeader>
           <DialogTitle className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <MessageCircle className="w-5 h-5 text-[#19c662]" />
+            
             Suporte ZapAgenda
           </DialogTitle>
         </DialogHeader>
@@ -78,20 +75,11 @@ const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
             </div>
             
             <div className="flex gap-2">
-              <Button
-                onClick={handleCopyEmail}
-                variant="outline"
-                size="sm"
-                className="flex-1 border-[#19c662] text-[#19c662] hover:bg-[#d0ffcf] hover:border-[#19c662]"
-              >
+              <Button onClick={handleCopyEmail} variant="outline" size="sm" className="flex-1 border-[#19c662] text-[#19c662] hover:bg-[#d0ffcf] hover:border-[#19c662]">
                 <Copy className="w-4 h-4 mr-2" />
                 {emailCopied ? 'Copiado!' : 'Copiar'}
               </Button>
-              <Button
-                onClick={handleOpenEmail}
-                size="sm"
-                className="flex-1 bg-[#19c662] hover:bg-[#16b356] text-white"
-              >
+              <Button onClick={handleOpenEmail} size="sm" className="flex-1 bg-[#19c662] hover:bg-[#16b356] text-white">
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Abrir Email
               </Button>
@@ -114,11 +102,7 @@ const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
               <p className="text-xs font-mono text-gray-800">{whatsappDisplayNumber}</p>
             </div>
             
-            <Button
-              onClick={handleOpenWhatsApp}
-              size="sm"
-              className="w-full bg-[#19c662] hover:bg-[#16b356] text-white"
-            >
+            <Button onClick={handleOpenWhatsApp} size="sm" className="w-full bg-[#19c662] hover:bg-[#16b356] text-white">
               <MessageCircle className="w-4 h-4 mr-2" />
               Abrir WhatsApp
             </Button>
@@ -132,8 +116,6 @@ const SupportModal = ({ isOpen, onClose }: SupportModalProps) => {
           </div>
         </div>
       </DialogContent>
-    </Dialog>
-  );
+    </Dialog>;
 };
-
 export default SupportModal;
