@@ -6,10 +6,11 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Users, Plus, Phone, Mail, Search, Edit, Trash2, MessageCircle } from 'lucide-react';
+import { Users, Plus, Phone, Mail, Search, Edit, Trash2, MessageCircle, Download } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import * as XLSX from 'xlsx';
 interface Client {
   id: string;
   name: string;
@@ -167,6 +168,53 @@ const ClientManagement = () => {
     const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodedMessage}`;
     window.open(whatsappUrl, '_blank');
   };
+
+  const handleExportToExcel = () => {
+    if (clients.length === 0) {
+      toast({
+        title: "Aviso",
+        description: "Não há clientes para exportar.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Preparar dados para exportação
+    const exportData = clients.map(client => ({
+      'Nome': client.name,
+      'Telefone': client.phone,
+      'Email': client.email || '',
+      'Data de Cadastro': new Date(client.created_at).toLocaleDateString('pt-BR')
+    }));
+
+    // Criar workbook e worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(exportData);
+
+    // Ajustar largura das colunas
+    const colWidths = [
+      { wch: 25 }, // Nome
+      { wch: 15 }, // Telefone
+      { wch: 30 }, // Email
+      { wch: 15 }  // Data de Cadastro
+    ];
+    ws['!cols'] = colWidths;
+
+    // Adicionar worksheet ao workbook
+    XLSX.utils.book_append_sheet(wb, ws, 'Clientes');
+
+    // Gerar nome do arquivo com data atual
+    const today = new Date().toLocaleDateString('pt-BR').replace(/\//g, '-');
+    const fileName = `clientes_${today}.xlsx`;
+
+    // Fazer download do arquivo
+    XLSX.writeFile(wb, fileName);
+
+    toast({
+      title: "Sucesso!",
+      description: `Planilha exportada com ${clients.length} cliente(s).`
+    });
+  };
   const filteredClients = clients.filter(client => client.name.toLowerCase().includes(searchTerm.toLowerCase()) || client.phone.includes(searchTerm));
   if (loading) {
     return <div className="p-6 space-y-6">
@@ -189,22 +237,34 @@ const ClientManagement = () => {
           <p className="text-whatsapp-muted text-sm">Cadastre e gerencie seus clientes</p>
         </div>
 
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-whatsapp-green hover:bg-green-600 text-white" onClick={() => {
-            setEditingClient(null);
-            setFormData({
-              name: '',
-              phone: '',
-              email: '',
-              notes: ''
-            });
-          }}>
-              <Plus className="w-4 h-4 mr-2" />
-              Novo Cliente
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="bg-white">
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={handleExportToExcel}
+            className="border-whatsapp text-whatsapp-green hover:bg-green-50"
+            title="Exportar clientes para Excel"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Exportar Excel
+          </Button>
+          
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="bg-whatsapp-green hover:bg-green-600 text-white" onClick={() => {
+              setEditingClient(null);
+              setFormData({
+                name: '',
+                phone: '',
+                email: '',
+                notes: ''
+              });
+            }}>
+                <Plus className="w-4 h-4 mr-2" />
+                Novo Cliente
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-white">
             <DialogHeader>
               <DialogTitle>
                 {editingClient ? 'Editar Cliente' : 'Novo Cliente'}
@@ -226,8 +286,18 @@ const ClientManagement = () => {
               }))} placeholder="(11) 99999-9999" className="border-whatsapp" />
               </div>
               <div>
-                
-                
+                <Label htmlFor="email">Email</Label>
+                <Input id="email" type="email" value={formData.email} onChange={e => setFormData(prev => ({
+                ...prev,
+                email: e.target.value
+              }))} placeholder="cliente@email.com" className="border-whatsapp" />
+              </div>
+              <div>
+                <Label htmlFor="notes">Observações</Label>
+                <Textarea id="notes" value={formData.notes} onChange={e => setFormData(prev => ({
+                ...prev,
+                notes: e.target.value
+              }))} placeholder="Observações sobre o cliente..." className="border-whatsapp" rows={3} />
               </div>
               
               <div className="flex gap-2 pt-4">
@@ -239,8 +309,9 @@ const ClientManagement = () => {
                 </Button>
               </div>
             </div>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {/* Search */}

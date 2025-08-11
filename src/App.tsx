@@ -14,6 +14,7 @@ import Onboarding from "./pages/Onboarding";
 import Checkout from "./pages/Checkout";
 import Dashboard from "./pages/Dashboard";
 import PublicBooking from "./pages/PublicBooking";
+import PublicSlugValidator from "./components/PublicSlugValidator";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -100,7 +101,18 @@ const App = () => (
             <Route path="/auth" element={<Navigate to="/login" replace />} />
             <Route path="/company-setup" element={<Navigate to="/onboarding" replace />} />
             
+            {/* Direct company slug access - must be last before 404 */}
+            <Route 
+              path="/:companySlug" 
+              element={
+                <ProtectedRoute requireAuth={false} requireOnboarding={false} requireSubscription={false}>
+                  <PublicSlugValidator />
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* 404 */}
+            <Route path="/404" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

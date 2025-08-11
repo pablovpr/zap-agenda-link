@@ -28,17 +28,14 @@ if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js', { scope: '/' })
       .then((registration) => {
-        console.log('🕐 Service Worker registrado com timezone Brasil:', 'America/Sao_Paulo');
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Service Worker registrado');
+        }
       })
       .catch((registrationError) => {
-        console.error('Erro ao registrar Service Worker:', registrationError);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Erro ao registrar Service Worker:', registrationError);
+        }
       });
   });
 }
-
-// Log inicial do timezone para debug
-console.log('🇧🇷 Aplicação iniciada com timezone do Brasil:', {
-  timezone: 'America/Sao_Paulo',
-  current_time: new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
-  utc_time: new Date().toISOString()
-});

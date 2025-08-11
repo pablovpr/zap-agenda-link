@@ -1,26 +1,58 @@
-import { parseISO } from 'date-fns';
+import { parseISO, format as dateFnsFormat } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { toZonedTime, fromZonedTime, format } from 'date-fns-tz';
 
 // Timezone do Brasil
 export const BRAZIL_TIMEZONE = 'America/Sao_Paulo';
 
-// Re-export format from date-fns-tz for convenience
-export { format };
+// Usar Intl.DateTimeFormat para conversões de timezone
+const convertToTimezone = (date: Date, timeZone: string): Date => {
+  // Usar Intl.DateTimeFormat para obter a data no timezone específico
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false
+  });
+
+  const parts = formatter.formatToParts(date);
+  const year = parseInt(parts.find(p => p.type === 'year')?.value || '0');
+  const month = parseInt(parts.find(p => p.type === 'month')?.value || '0') - 1;
+  const day = parseInt(parts.find(p => p.type === 'day')?.value || '0');
+  const hour = parseInt(parts.find(p => p.type === 'hour')?.value || '0');
+  const minute = parseInt(parts.find(p => p.type === 'minute')?.value || '0');
+  const second = parseInt(parts.find(p => p.type === 'second')?.value || '0');
+
+  return new Date(year, month, day, hour, minute, second);
+};
+
+const convertFromTimezone = (date: Date, timeZone: string): Date => {
+  // Calcular o offset do timezone
+  const utcDate = new Date(date.getTime() + (date.getTimezoneOffset() * 60000));
+  const targetDate = new Date(utcDate.toLocaleString('en-US', { timeZone }));
+  const offset = targetDate.getTime() - utcDate.getTime();
+  return new Date(date.getTime() - offset);
+};
+
+// Re-export format
+export const format = dateFnsFormat;
 
 /**
  * Converte uma data UTC para o horário de Brasília
  */
 export const utcToBrazilTime = (utcDate: Date | string): Date => {
   const date = typeof utcDate === 'string' ? parseISO(utcDate) : utcDate;
-  return toZonedTime(date, BRAZIL_TIMEZONE);
+  return convertToTimezone(date, BRAZIL_TIMEZONE);
 };
 
 /**
  * Converte uma data do horário de Brasília para UTC
  */
 export const brazilTimeToUtc = (brazilDate: Date): Date => {
-  return fromZonedTime(brazilDate, BRAZIL_TIMEZONE);
+  return convertFromTimezone(brazilDate, BRAZIL_TIMEZONE);
 };
 
 /**
@@ -31,7 +63,8 @@ export const formatUtcToBrazilTime = (
   formatString: string = 'dd/MM/yyyy HH:mm'
 ): string => {
   const date = typeof utcDate === 'string' ? parseISO(utcDate) : utcDate;
-  return format(date, formatString, { timeZone: BRAZIL_TIMEZONE, locale: ptBR });
+  const brazilDate = utcToBrazilTime(date);
+  return dateFnsFormat(brazilDate, formatString, { locale: ptBR });
 };
 
 /**
@@ -68,7 +101,7 @@ export const convertBrasiliaToDatabase = (dateStr: string, timeStr: string): str
  * Obtém a data atual no horário de Brasília
  */
 export const getNowInBrazil = (): Date => {
-  return toZonedTime(new Date(), BRAZIL_TIMEZONE);
+  return convertToTimezone(new Date(), BRAZIL_TIMEZONE);
 };
 
 /**
@@ -76,7 +109,7 @@ export const getNowInBrazil = (): Date => {
  */
 export const getTodayInBrazil = (): string => {
   const now = getNowInBrazil();
-  return format(now, 'yyyy-MM-dd', { timeZone: BRAZIL_TIMEZONE });
+  return dateFnsFormat(now, 'yyyy-MM-dd');
 };
 
 /**
@@ -84,7 +117,7 @@ export const getTodayInBrazil = (): string => {
  */
 export const getCurrentTimeInBrazil = (): string => {
   const now = getNowInBrazil();
-  return format(now, 'HH:mm', { timeZone: BRAZIL_TIMEZONE });
+  return dateFnsFormat(now, 'HH:mm');
 };
 
 /**
@@ -93,7 +126,7 @@ export const getCurrentTimeInBrazil = (): string => {
 export const brazilDateTimeToUtc = (dateStr: string, timeStr: string): Date => {
   // Criar data no horário de Brasília
   const brazilDateTime = new Date(`${dateStr}T${timeStr}:00`);
-  return fromZonedTime(brazilDateTime, BRAZIL_TIMEZONE);
+  return convertFromTimezone(brazilDateTime, BRAZIL_TIMEZONE);
 };
 
 /**
@@ -107,7 +140,7 @@ export const isDateTimePastInBrazil = (dateStr: string, timeStr?: string): boole
     return targetDate < now;
   } else {
     // Se não tem horário, compara apenas a data
-    const today = format(now, 'yyyy-MM-dd', { timeZone: BRAZIL_TIMEZONE });
+    const today = getTodayInBrazil();
     return dateStr < today;
   }
 };
@@ -132,17 +165,19 @@ export const convertWorkingHours = (timeStr: string): string => {
 };
 
 /**
- * Debug: Mostra comparação de horários
+ * Debug: Mostra comparação de horários (apenas em desenvolvimento)
  */
 export const debugTimezone = () => {
-  const now = new Date();
-  const brazilTime = getNowInBrazil();
+  if (process.env.NODE_ENV === 'development') {
+    const now = new Date();
+    const brazilTime = getNowInBrazil();
 
-  console.log('🕐 Debug Timezone:', {
-    utc: now.toISOString(),
-    brazil: format(brazilTime, 'yyyy-MM-dd HH:mm:ss', { timeZone: BRAZIL_TIMEZONE }),
-    utc_formatted: format(now, 'yyyy-MM-dd HH:mm:ss'),
-    brazil_formatted: format(brazilTime, 'yyyy-MM-dd HH:mm:ss', { timeZone: BRAZIL_TIMEZONE }),
-    timezone: BRAZIL_TIMEZONE
-  });
+    console.log('🕐 Debug Timezone:', {
+      utc: now.toISOString(),
+      brazil: brazilTime.toISOString(),
+      utc_formatted: dateFnsFormat(now, 'yyyy-MM-dd HH:mm:ss'),
+      brazil_formatted: dateFnsFormat(brazilTime, 'yyyy-MM-dd HH:mm:ss'),
+      timezone: BRAZIL_TIMEZONE
+    });
+  }
 };

@@ -7,6 +7,7 @@ import { useRealTimeSync } from '@/hooks/useRealTimeSync';
 import { useToast } from '@/hooks/use-toast';
 import GeneralSettings from './settings/GeneralSettings';
 import ScheduleSettings from './settings/ScheduleSettings';
+import NotificationSettings from './NotificationSettings';
 import { usePublicThemeCustomizer } from '@/hooks/usePublicThemeCustomizer';
 const SettingsPanel = () => {
   const {
@@ -84,12 +85,15 @@ const SettingsPanel = () => {
 
       <Tabs defaultValue="general" className="space-y-4">
         <div className="overflow-x-auto pb-2">
-          <TabsList className="grid w-full grid-cols-2 min-w-[300px] md:min-w-0 bg-gray-100 h-auto">
+          <TabsList className="grid w-full grid-cols-3 min-w-[400px] md:min-w-0 bg-gray-100 h-auto">
             <TabsTrigger value="general" className="text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-whatsapp-green px-3 py-2">
               ⚙️ Configurações Gerais
             </TabsTrigger>
             <TabsTrigger value="schedule" className="text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-whatsapp-green px-3 py-2">
               ⏰ Horários de Funcionamento
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="text-xs md:text-sm data-[state=active]:bg-white data-[state=active]:text-whatsapp-green px-3 py-2">
+              🔔 Notificações
             </TabsTrigger>
           </TabsList>
         </div>
@@ -107,6 +111,10 @@ const SettingsPanel = () => {
           // Callback quando os horários são atualizados
           console.log('Horários atualizados com sucesso');
         }} />
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-4">
+          <NotificationSettings />
         </TabsContent>
       </Tabs>
 

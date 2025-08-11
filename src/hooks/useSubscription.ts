@@ -25,7 +25,6 @@ export const useSubscription = () => {
       
       // Temporariamente simular assinatura ativa para todos os usuários
       // TODO: Implementar verificação real quando o sistema de pagamento estiver configurado
-      console.log('Simulating active subscription for user:', user.id);
       
       const mockSubscriptionData = {
         subscribed: true,

@@ -69,16 +69,17 @@ const DashboardContent = ({
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
             <MonthlyAgenda />
           </div>
-        </div>
 
-        <div className="space-y-4 md:space-y-6 min-w-0">
-          <RevenueCard />
-          
+          {/* Agendamentos de Hoje - Agora abaixo do calendário */}
           <TodayAppointmentsList 
             appointments={data.todayAppointmentsList} 
             loading={loading} 
             onRefresh={onRefreshData} 
           />
+        </div>
+
+        <div className="space-y-4 md:space-y-6 min-w-0">
+          <RevenueCard />
         </div>
       </div>
 

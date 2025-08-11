@@ -7,6 +7,7 @@ import SettingsPanel from '../components/SettingsPanel';
 import ClientManagement from '../components/ClientManagement';
 import ServiceManagement from '../components/ServiceManagement';
 import ProfileCustomizationModal from '../components/ProfileCustomizationModal';
+import SupportModal from '../components/SupportModal';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Calendar, Users, Briefcase, LogOut, HelpCircle, Palette } from 'lucide-react';
 import {
@@ -26,6 +27,7 @@ const Dashboard = () => {
   const [currentView, setCurrentView] = useState<ViewType>('dashboard');
   const [companyName, setCompanyName] = useState('');
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Garantir que área administrativa tenha classe correta
@@ -139,7 +141,7 @@ const Dashboard = () => {
                   Gerenciar Serviços
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className="bg-whatsapp-border" />
-                <DropdownMenuItem className="hover:bg-gray-50">
+                <DropdownMenuItem onClick={() => setShowSupportModal(true)} className="hover:bg-gray-50">
                   <HelpCircle className="w-4 h-4 mr-2" />
                   Suporte
                 </DropdownMenuItem>
@@ -164,6 +166,12 @@ const Dashboard = () => {
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
         onSuccess={handleProfileSuccess}
+      />
+
+      {/* Modal de Suporte */}
+      <SupportModal
+        isOpen={showSupportModal}
+        onClose={() => setShowSupportModal(false)}
       />
     </>
   );

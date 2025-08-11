@@ -37,91 +37,91 @@ export const useDashboardData = (companyName?: string) => {
     try {
       setLoading(true);
       
-      // Fetch company settings
-      const settings = await fetchCompanySettings(user.id);
+      // Use Brazil timezone for dates
+      const today = getTodayInBrazil();
+      const currentMonth = getNowInBrazil();
+      const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).toISOString().split('T')[0];
+      const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).toISOString().split('T')[0];
+
+      // Execute all queries in parallel for better performance
+      const [
+        settingsResult,
+        todayAppointmentsResult,
+        clientsResult,
+        completedAppointmentsResult,
+        recentAppointmentsResult
+      ] = await Promise.all([
+        // Company settings
+        fetchCompanySettings(user.id),
+        
+        // Today's appointments
+        supabase
+          .from('appointments')
+          .select(`
+            id,
+            appointment_time,
+            status,
+            clients!inner(name, phone),
+            services!inner(name)
+          `)
+          .eq('company_id', user.id)
+          .eq('appointment_date', today)
+          .order('appointment_time'),
+        
+        // Total clients count only
+        supabase
+          .from('clients')
+          .select('id', { count: 'exact', head: true })
+          .eq('company_id', user.id),
+        
+        // Monthly revenue from completed appointments
+        supabase
+          .from('appointments')
+          .select('service_id, services(price)')
+          .eq('company_id', user.id)
+          .gte('appointment_date', firstDay)
+          .lte('appointment_date', lastDay)
+          .eq('status', 'completed'),
+        
+        // Recent appointments
+        supabase
+          .from('appointments')
+          .select(`
+            id,
+            appointment_date,
+            appointment_time,
+            status,
+            clients(name, phone),
+            services(name)
+          `)
+          .eq('company_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(5)
+      ]);
+
+      // Process company settings
+      const settings = settingsResult;
       setCompanySettings(settings);
       
       let publicUrl = '';
       if (settings?.slug) {
         publicUrl = generatePublicBookingUrl(settings.slug);
         setBookingLink(publicUrl);
-        setDashboardData(prev => ({ ...prev, bookingLink: publicUrl }));
       }
 
-      // Use Brazil timezone for dates
-      const today = getTodayInBrazil();
-      
-      // Today's appointments with client and service data
-      const { data: todayAppointments, error: todayError } = await supabase
-        .from('appointments')
-        .select(`
-          id,
-          appointment_time,
-          status,
-          clients!inner(name, phone),
-          services!inner(name)
-        `)
-        .eq('company_id', user.id)
-        .eq('appointment_date', today)
-        .order('appointment_time');
+      // Process results
+      const todayAppointments = todayAppointmentsResult.data || [];
+      const clientsCount = clientsResult.count || 0;
+      const completedAppointments = completedAppointmentsResult.data || [];
+      const recentAppointments = recentAppointmentsResult.data || [];
 
-      if (todayError) {
-        console.error('Error fetching today appointments:', todayError);
-      }
-
-      // Total clients
-      const { data: clients, error: clientsError } = await supabase
-        .from('clients')
-        .select('id')
-        .eq('company_id', user.id);
-
-      if (clientsError) {
-        console.error('Error fetching clients:', clientsError);
-      }
-
-      // Monthly revenue - only from COMPLETED appointments (not scheduled)
-      const currentMonth = getNowInBrazil();
-      const firstDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1).toISOString().split('T')[0];
-      const lastDay = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).toISOString().split('T')[0];
-
-      const { data: completedAppointments, error: monthlyError } = await supabase
-        .from('appointments')
-        .select('service_id, services(price)')
-        .eq('company_id', user.id)
-        .gte('appointment_date', firstDay)
-        .lte('appointment_date', lastDay)
-        .eq('status', 'completed'); // Only count completed appointments for revenue
-
-      if (monthlyError) {
-        console.error('Error fetching completed appointments:', monthlyError);
-      }
-
-      // Calculate monthly revenue from completed appointments
-      const monthlyRevenue = completedAppointments?.reduce((total, apt: any) => {
+      // Calculate monthly revenue
+      const monthlyRevenue = completedAppointments.reduce((total, apt: any) => {
         return total + (apt.services?.price || 0);
-      }, 0) || 0;
+      }, 0);
 
-      // Recent appointments
-      const { data: recentAppointments, error: recentError } = await supabase
-        .from('appointments')
-        .select(`
-          id,
-          appointment_date,
-          appointment_time,
-          status,
-          clients(name, phone),
-          services(name)
-        `)
-        .eq('company_id', user.id)
-        .order('created_at', { ascending: false })
-        .limit(5);
-
-      if (recentError) {
-        console.error('Error fetching recent appointments:', recentError);
-      }
-
-      // Format data
-      const formattedTodayList = (todayAppointments || []).map((apt: any) => ({
+      // Format data efficiently
+      const formattedTodayList = todayAppointments.map((apt: any) => ({
         id: apt.id,
         appointment_time: apt.appointment_time,
         status: apt.status,
@@ -130,7 +130,7 @@ export const useDashboardData = (companyName?: string) => {
         service_name: apt.services?.name || 'Serviço'
       }));
 
-      const formattedRecentList = (recentAppointments || []).map((apt: any) => ({
+      const formattedRecentList = recentAppointments.map((apt: any) => ({
         id: apt.id,
         appointment_date: apt.appointment_date,
         appointment_time: apt.appointment_time,
@@ -141,8 +141,8 @@ export const useDashboardData = (companyName?: string) => {
       }));
 
       setDashboardData({
-        todayAppointments: todayAppointments?.length || 0,
-        totalClients: clients?.length || 0,
+        todayAppointments: todayAppointments.length,
+        totalClients: clientsCount,
         monthlyRevenue,
         completionRate: 85, // Mock completion rate
         bookingLink: publicUrl,

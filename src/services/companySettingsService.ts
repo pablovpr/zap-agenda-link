@@ -1,9 +1,6 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 export const fetchCompanySettings = async (userId: string) => {
-  console.log('🔍 fetchCompanySettings: Buscando configurações para usuário:', userId);
-  
   try {
     const { data, error } = await supabase
       .from('company_settings')
@@ -12,32 +9,31 @@ export const fetchCompanySettings = async (userId: string) => {
       .maybeSingle();
 
     if (error) {
-      console.error('❌ fetchCompanySettings: Erro:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao buscar configurações:', error);
+      }
       throw new Error(`Erro ao buscar configurações: ${error.message}`);
     }
 
-    console.log('✅ fetchCompanySettings: Configurações encontradas:', data);
     return data;
   } catch (error: any) {
-    console.error('❌ fetchCompanySettings: Erro no serviço:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro no serviço fetchCompanySettings:', error);
+    }
     throw error;
   }
 };
 
 export const createDefaultSettings = async (userId: string, companyName: string): Promise<void> => {
-  console.log('🚀 createDefaultSettings: Criando configurações padrão para:', userId, companyName);
-  
   try {
     // Verificar se já existem configurações
     const existingSettings = await fetchCompanySettings(userId);
     if (existingSettings) {
-      console.log('ℹ️ createDefaultSettings: Configurações já existem, pulando criação');
       return;
     }
 
     // Gerar slug único
     const slug = await generateUniqueSlug(companyName);
-    console.log('📝 createDefaultSettings: Slug gerado:', slug);
     
     const defaultSettings = {
       company_id: userId,
@@ -59,13 +55,15 @@ export const createDefaultSettings = async (userId: string, companyName: string)
       .insert(defaultSettings);
 
     if (error) {
-      console.error('❌ createDefaultSettings: Erro ao inserir:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao criar configurações:', error);
+      }
       throw new Error(`Erro ao criar configurações: ${error.message}`);
     }
-
-    console.log('✅ createDefaultSettings: Configurações criadas com sucesso');
   } catch (error: any) {
-    console.error('❌ createDefaultSettings: Erro no serviço:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro no serviço createDefaultSettings:', error);
+    }
     throw error;
   }
 };
@@ -98,7 +96,9 @@ export const generateUniqueSlug = async (companyName: string): Promise<string> =
 
     return finalSlug;
   } catch (error: any) {
-    console.error('❌ generateUniqueSlug: Erro:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro ao gerar slug:', error);
+    }
     // Retornar slug de fallback em caso de erro
     return `empresa-${Date.now()}`;
   }
@@ -113,13 +113,17 @@ export const isSlugTaken = async (slug: string): Promise<boolean> => {
       .maybeSingle();
 
     if (error) {
-      console.error('⚠️ isSlugTaken: Erro ao verificar slug:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao verificar slug:', error);
+      }
       return false; // Assumir disponível se houver erro
     }
 
     return data !== null;
   } catch (error: any) {
-    console.error('❌ isSlugTaken: Erro no serviço:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro no serviço isSlugTaken:', error);
+    }
     return false; // Assumir disponível se houver erro
   }
 };
@@ -143,14 +147,17 @@ export const updateCompanySlug = async (userId: string, newSlug: string): Promis
       .eq('company_id', userId);
 
     if (error) {
-      console.error('❌ updateCompanySlug: Erro ao atualizar:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao atualizar slug:', error);
+      }
       throw new Error(`Erro ao atualizar slug: ${error.message}`);
     }
 
-    console.log('✅ updateCompanySlug: Slug atualizado com sucesso');
     return true;
   } catch (error: any) {
-    console.error('❌ updateCompanySlug: Erro no serviço:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro no serviço updateCompanySlug:', error);
+    }
     throw error;
   }
 };
@@ -214,9 +221,6 @@ export const updateCompanySettings = async (
   userId: string, 
   settings: CompanySettingsUpdate
 ): Promise<void> => {
-  console.log('🔄 updateCompanySettings: Atualizando configurações para usuário:', userId);
-  console.log('📝 updateCompanySettings: Dados:', settings);
-  
   try {
     const { error } = await supabase
       .from('company_settings')
@@ -227,13 +231,15 @@ export const updateCompanySettings = async (
       .eq('company_id', userId);
 
     if (error) {
-      console.error('❌ updateCompanySettings: Erro ao atualizar:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao atualizar configurações:', error);
+      }
       throw new Error(`Erro ao atualizar configurações: ${error.message}`);
     }
-
-    console.log('✅ updateCompanySettings: Configurações atualizadas com sucesso');
   } catch (error: any) {
-    console.error('❌ updateCompanySettings: Erro no serviço:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro no serviço updateCompanySettings:', error);
+    }
     throw error;
   }
 };
@@ -243,9 +249,6 @@ export const updateCompanyProfile = async (
   userId: string, 
   profile: ProfileUpdate
 ): Promise<void> => {
-  console.log('🔄 updateCompanyProfile: Atualizando perfil para usuário:', userId);
-  console.log('📝 updateCompanyProfile: Dados:', profile);
-  
   try {
     const { error } = await supabase
       .from('profiles')
@@ -256,21 +259,21 @@ export const updateCompanyProfile = async (
       .eq('id', userId);
 
     if (error) {
-      console.error('❌ updateCompanyProfile: Erro ao atualizar:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao atualizar perfil:', error);
+      }
       throw new Error(`Erro ao atualizar perfil: ${error.message}`);
     }
-
-    console.log('✅ updateCompanyProfile: Perfil atualizado com sucesso');
   } catch (error: any) {
-    console.error('❌ updateCompanyProfile: Erro no serviço:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro no serviço updateCompanyProfile:', error);
+    }
     throw error;
   }
 };
 
 // Função para buscar perfil da empresa
 export const fetchCompanyProfile = async (userId: string) => {
-  console.log('🔍 fetchCompanyProfile: Buscando perfil para usuário:', userId);
-  
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -279,14 +282,17 @@ export const fetchCompanyProfile = async (userId: string) => {
       .maybeSingle();
 
     if (error) {
-      console.error('❌ fetchCompanyProfile: Erro:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Erro ao buscar perfil:', error);
+      }
       throw new Error(`Erro ao buscar perfil: ${error.message}`);
     }
 
-    console.log('✅ fetchCompanyProfile: Perfil encontrado:', data);
     return data;
   } catch (error: any) {
-    console.error('❌ fetchCompanyProfile: Erro no serviço:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro no serviço fetchCompanyProfile:', error);
+    }
     throw error;
   }
 };
@@ -297,18 +303,16 @@ export const saveAllSettings = async (
   settings: CompanySettingsUpdate,
   profile: ProfileUpdate
 ): Promise<void> => {
-  console.log('💾 saveAllSettings: Salvando todas as configurações para usuário:', userId);
-  
   try {
     // Atualizar configurações e perfil em paralelo
     await Promise.all([
       updateCompanySettings(userId, settings),
       updateCompanyProfile(userId, profile)
     ]);
-
-    console.log('✅ saveAllSettings: Todas as configurações salvas com sucesso');
   } catch (error: any) {
-    console.error('❌ saveAllSettings: Erro ao salvar:', error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error('Erro ao salvar configurações:', error);
+    }
     throw error;
   }
 };
