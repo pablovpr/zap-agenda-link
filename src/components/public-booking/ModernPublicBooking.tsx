@@ -87,7 +87,6 @@ const ModernPublicBooking = () => {
           const times = await generateAvailableTimes(selectedDate, serviceDuration);
           setAvailableTimes(times);
 
-          console.log('✅ Horários carregados:', times.length, 'horários disponíveis', times);
         } catch (error) {
           console.error('❌ Erro ao carregar horários:', error);
           setAvailableTimes([]);

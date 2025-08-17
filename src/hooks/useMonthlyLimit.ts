@@ -27,7 +27,6 @@ export const useMonthlyLimit = () => {
       }
 
       if (!settings?.monthly_appointments_limit) {
-        console.log('Limite mensal não configurado');
         return true; // Se não há limite configurado, permite o agendamento
       }
 
@@ -65,7 +64,6 @@ export const useMonthlyLimit = () => {
       }
 
       const appointmentCount = appointments?.length || 0;
-      console.log(`Cliente ${clientPhone} tem ${appointmentCount} agendamentos este mês. Limite: ${monthlyLimit}`);
 
       if (appointmentCount >= monthlyLimit) {
         toast({

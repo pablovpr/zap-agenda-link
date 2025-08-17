@@ -1,6 +1,10 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const fetchCompanySettings = async (userId: string) => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   try {
     const { data, error } = await supabase
       .from('company_settings')
@@ -25,6 +29,10 @@ export const fetchCompanySettings = async (userId: string) => {
 };
 
 export const createDefaultSettings = async (userId: string, companyName: string): Promise<void> => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   try {
     // Verificar se já existem configurações
     const existingSettings = await fetchCompanySettings(userId);
@@ -60,6 +68,10 @@ export const createDefaultSettings = async (userId: string, companyName: string)
       }
       throw new Error(`Erro ao criar configurações: ${error.message}`);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   } catch (error: any) {
     if (process.env.NODE_ENV === 'development') {
       console.error('Erro no serviço createDefaultSettings:', error);
@@ -221,6 +233,10 @@ export const updateCompanySettings = async (
   userId: string, 
   settings: CompanySettingsUpdate
 ): Promise<void> => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   try {
     const { error } = await supabase
       .from('company_settings')
@@ -236,6 +252,10 @@ export const updateCompanySettings = async (
       }
       throw new Error(`Erro ao atualizar configurações: ${error.message}`);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   } catch (error: any) {
     if (process.env.NODE_ENV === 'development') {
       console.error('Erro no serviço updateCompanySettings:', error);
@@ -249,6 +269,10 @@ export const updateCompanyProfile = async (
   userId: string, 
   profile: ProfileUpdate
 ): Promise<void> => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   try {
     const { error } = await supabase
       .from('profiles')
@@ -264,6 +288,10 @@ export const updateCompanyProfile = async (
       }
       throw new Error(`Erro ao atualizar perfil: ${error.message}`);
     }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   } catch (error: any) {
     if (process.env.NODE_ENV === 'development') {
       console.error('Erro no serviço updateCompanyProfile:', error);
@@ -274,6 +302,10 @@ export const updateCompanyProfile = async (
 
 // Função para buscar perfil da empresa
 export const fetchCompanyProfile = async (userId: string) => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -303,12 +335,20 @@ export const saveAllSettings = async (
   settings: CompanySettingsUpdate,
   profile: ProfileUpdate
 ): Promise<void> => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   try {
     // Atualizar configurações e perfil em paralelo
     await Promise.all([
       updateCompanySettings(userId, settings),
       updateCompanyProfile(userId, profile)
     ]);
+<<<<<<< HEAD
+=======
+
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   } catch (error: any) {
     if (process.env.NODE_ENV === 'development') {
       console.error('Erro ao salvar configurações:', error);

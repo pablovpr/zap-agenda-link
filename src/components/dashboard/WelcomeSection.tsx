@@ -22,7 +22,6 @@ const WelcomeSection = () => {
 
       <CompanySettingsModal isOpen={showSettingsModal} onClose={() => setShowSettingsModal(false)} onSuccess={() => {
       // Poderia recarregar dados se necessário
-      console.log('Configurações salvas com sucesso');
     }} />
     </>;
 };

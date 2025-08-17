@@ -8,7 +8,6 @@ export const checkMonthlyLimit = async (
   monthlyAppointmentsLimit?: number
 ) => {
   if (!monthlyAppointmentsLimit) {
-    console.log('📊 Limite mensal não configurado, permitindo agendamento');
     return true;
   }
 
@@ -22,9 +21,6 @@ export const checkMonthlyLimit = async (
     const nextYear = currentMonth === 12 ? currentYear + 1 : currentYear;
     const startOfNextMonth = `${nextYear}-${nextMonth.toString().padStart(2, '0')}-01`;
     
-    console.log(`📊 Verificando limite mensal para cliente ${clientPhone}`);
-    console.log(`📅 Período: ${startOfMonth} até ${startOfNextMonth}`);
-    console.log(`📊 Limite configurado: ${monthlyAppointmentsLimit}`);
     
     // Buscar cliente por telefone
     const { data: client, error: clientError } = await supabase
@@ -40,7 +36,6 @@ export const checkMonthlyLimit = async (
     }
     
     if (!client) {
-      console.log('👤 Cliente novo, permitindo agendamento');
       return true; // Novo cliente, pode agendar
     }
 
@@ -60,10 +55,8 @@ export const checkMonthlyLimit = async (
     }
 
     const appointmentCount = appointments?.length || 0;
-    console.log(`📊 Cliente ${clientPhone} tem ${appointmentCount} agendamentos confirmados este mês`);
     
     const canBook = appointmentCount < monthlyAppointmentsLimit;
-    console.log(`✅ Pode agendar: ${canBook}`);
     
     return canBook;
   } catch (error) {

@@ -97,9 +97,6 @@ const TimeSelection = ({
         </div>
       </div>
       
-      <div className="text-xs text-[#19c662] dynamic-primary text-center mt-2">
-        ✅ Apenas horários realmente disponíveis são exibidos
-      </div>
     </div>
   );
 };

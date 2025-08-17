@@ -54,8 +54,6 @@ const StandardCalendar = ({
       const dateString = formatToBrasilia(date, 'yyyy-MM-dd');
       onDateSelect(dateString);
       
-      // Log para debug
-      console.log('📅 Data selecionada imediatamente:', dateString);
     }
   };
 

@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, User, Phone } from 'lucide-react';
+import { Clock, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
@@ -37,31 +37,6 @@ const RecentAppointments = ({ appointments }: RecentAppointmentsProps) => {
     );
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return 'text-green-600';
-      case 'completed':
-        return 'text-blue-600';
-      case 'cancelled':
-        return 'text-red-600';
-      default:
-        return 'text-gray-600';
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    switch (status) {
-      case 'confirmed':
-        return 'Confirmado';
-      case 'completed':
-        return 'Concluído';
-      case 'cancelled':
-        return 'Cancelado';
-      default:
-        return status;
-    }
-  };
 
   return (
     <Card>
@@ -72,28 +47,31 @@ const RecentAppointments = ({ appointments }: RecentAppointmentsProps) => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
+        <div className="space-y-2">
           {appointments.map((appointment) => (
             <div 
               key={appointment.id}
-              className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+              className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
             >
-              <div className="flex items-center gap-3">
-                <div className="flex items-center gap-2">
-                  <User className="w-4 h-4 text-gray-500" />
-                  <span className="font-medium">{appointment.client_name}</span>
+              <div className="space-y-2">
+                {/* Primeira linha: Nome + Data + Horário */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-800 truncate text-sm">{appointment.client_name}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-primary font-medium">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm">
+                      {format(new Date(appointment.appointment_date), 'dd/MM', { locale: ptBR })} às {appointment.appointment_time.substring(0, 5)}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 text-gray-600">
-                  <Phone className="w-4 h-4" />
-                  <span>{appointment.client_phone}</span>
-                </div>
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-medium">
-                  {format(new Date(appointment.appointment_date), 'dd/MM', { locale: ptBR })} às {appointment.appointment_time.substring(0, 5)}
-                </div>
-                <div className={`text-xs ${getStatusColor(appointment.status)}`}>
-                  {getStatusLabel(appointment.status)}
+                
+                {/* Segunda linha: Tipo de serviço */}
+                <div className="ml-6">
+                  <span className="text-xs text-gray-600">{appointment.service_name}</span>
                 </div>
               </div>
             </div>

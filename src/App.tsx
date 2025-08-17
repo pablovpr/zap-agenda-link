@@ -14,7 +14,15 @@ import Onboarding from "./pages/Onboarding";
 import Checkout from "./pages/Checkout";
 import Dashboard from "./pages/Dashboard";
 import PublicBooking from "./pages/PublicBooking";
+<<<<<<< HEAD
 import PublicSlugValidator from "./components/PublicSlugValidator";
+=======
+import PublicBookingRedirect from "./components/PublicBookingRedirect";
+import CreateTestCompany from "./pages/CreateTestCompany";
+import CoverSettings from "./pages/CoverSettings";
+import ThemeCustomization from "./pages/ThemeCustomization";
+import DoubleBookingTestPage from "./pages/DoubleBookingTestPage";
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient({
@@ -32,6 +40,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
       <TooltipProvider>
+<<<<<<< HEAD
         <Toaster />
         <Sonner />
         <BrowserRouter>
@@ -116,6 +125,39 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
+=======
+        <AuthProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Rotas administrativas e de sistema */}
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/company-setup" element={<CompanySetup />} />
+              <Route path="/create-test-company" element={<CreateTestCompany />} />
+              <Route path="/cover-settings" element={<CoverSettings />} />
+              <Route path="/theme-customization" element={<ThemeCustomization />} />
+              
+              {/* Rotas de desenvolvimento/teste (manter apenas essenciais) */}
+              <Route path="/double-booking-test" element={<DoubleBookingTestPage />} />
+              <Route path="/timezone-final-test" element={<FinalTimezoneDebug />} />
+              
+              {/* Redirecionamento para compatibilidade com links antigos */}
+              <Route path="/public/:companySlug" element={<PublicBookingRedirect />} />
+              
+              {/* Página inicial */}
+              <Route path="/" element={<Index />} />
+              
+              {/* Nova rota principal para booking público (dominio.com/{slug}) */}
+              <Route path="/:companySlug" element={<PublicBooking />} />
+              
+              {/* Página 404 */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+            <PWAInstallPrompt />
+          </BrowserRouter>
+          <Toaster />
+          <Sonner />
+        </AuthProvider>
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
       </TooltipProvider>
     </AuthProvider>
   </QueryClientProvider>

@@ -105,12 +105,19 @@ const BookingDataCard = ({
         )}
       </div>
 
+<<<<<<< HEAD
       {/* Modal de Seleção de Serviço */}
+=======
+      {/* Modal de Seleção de Serviços */}
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
       <ServiceSelectionModal
         isOpen={isServiceModalOpen}
         onClose={() => setIsServiceModalOpen(false)}
         services={services}
+<<<<<<< HEAD
         selectedService={selectedService}
+=======
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
         onServiceSelect={onServiceChange}
       />
     </div>

@@ -183,11 +183,14 @@ export const createAppointment = async (
     const selectedService = services?.find(s => s.id === formData.selectedService);
     const selectedProfessional = professionals?.find(p => p.id === formData.selectedProfessional);
 
+    // CORREÇÃO CRÍTICA: Normalizar telefone no fluxo público também
+    const normalizedClientPhone = formData.clientPhone.replace(/\D/g, '');
+    
     // Criar dados do agendamento
     const appointmentData: AppointmentData = {
       company_id: companySettings.company_id,
       client_name: formData.clientName,
-      client_phone: formData.clientPhone,
+      client_phone: normalizedClientPhone, // CORREÇÃO CRÍTICA: Telefone normalizado
       client_email: formData.clientEmail,
       service_id: formData.selectedService,
       professional_id: formData.selectedProfessional,
@@ -255,7 +258,6 @@ const checkTimeSlotAvailability = async (
       const [aptHours, aptMinutes] = aptTime.split(':').map(Number);
       const aptStartMinutes = aptHours * 60 + aptMinutes;
 
-      console.log(`🔍 Verificando conflito com agendamento ${aptTime} (${aptDuration}min)`);
 
       // LÓGICA DE BLOQUEIO: Verificar se há sobreposição
       // Agendamento existente ocupa slots baseado na sua duração
@@ -316,7 +318,26 @@ const createAppointmentOriginal = async (appointmentData: AppointmentData) => {
 
     const serviceDuration = serviceData.duration;
 
-    // Verificar disponibilidade do horário
+    // VERIFICAÇÃO DUPLA: Verificar disponibilidade do horário exato
+    const { data: existingExactSlot, error: checkError } = await supabase
+      .from('appointments')
+      .select('id')
+      .eq('company_id', appointmentData.company_id)
+      .eq('appointment_date', appointmentData.appointment_date)
+      .eq('appointment_time', appointmentData.appointment_time)
+      .neq('status', 'cancelled')
+      .maybeSingle();
+
+    if (checkError) {
+      console.error('❌ Erro ao verificar slot:', checkError);
+      throw new Error('Erro ao verificar disponibilidade do horário');
+    }
+
+    if (existingExactSlot) {
+      throw new Error('⚠️ Este horário não está mais disponível. Outro cliente acabou de agendar neste mesmo horário. Por favor, escolha outro horário.');
+    }
+
+    // Verificar disponibilidade considerando duração do serviço
     const availability = await checkTimeSlotAvailability(
       appointmentData.company_id,
       appointmentData.appointment_date,
@@ -332,24 +353,27 @@ const createAppointmentOriginal = async (appointmentData: AppointmentData) => {
 
     // Se não tem client_id, criar ou buscar cliente
     if (!clientId && appointmentData.client_name && appointmentData.client_phone) {
-      // Primeiro, tentar encontrar cliente existente pelo telefone
+      // CORREÇÃO CRÍTICA: Normalizar telefone antes de buscar
+      const normalizedPhone = appointmentData.client_phone.replace(/\D/g, '');
+      
+      // Primeiro, tentar encontrar cliente existente pelo telefone normalizado
       const { data: existingClient } = await supabase
         .from('clients')
         .select('id')
         .eq('company_id', appointmentData.company_id)
-        .eq('phone', appointmentData.client_phone)
+        .eq('phone', normalizedPhone)
         .maybeSingle();
 
       if (existingClient) {
         clientId = existingClient.id;
       } else {
-        // Criar novo cliente
+        // Criar novo cliente com telefone normalizado
         const { data: newClient, error: clientError } = await supabase
           .from('clients')
           .insert({
             company_id: appointmentData.company_id,
             name: appointmentData.client_name,
-            phone: appointmentData.client_phone,
+            phone: normalizedPhone, // CORREÇÃO CRÍTICA: Usar telefone normalizado
             email: appointmentData.client_email || null
           })
           .select('id')
@@ -368,6 +392,7 @@ const createAppointmentOriginal = async (appointmentData: AppointmentData) => {
     }
 
     // INSERÇÃO COM VERIFICAÇÃO FINAL: Usar uma transação para garantir atomicidade
+
     const { data, error } = await supabase
       .from('appointments')
       .insert({
@@ -387,11 +412,17 @@ const createAppointmentOriginal = async (appointmentData: AppointmentData) => {
       .single();
 
     if (error) {
-      // Verificar se é erro de conflito de horário
+      // Verificar se é erro de conflito de horário (constraint única)
+      if (error.code === '23505' || error.message?.includes('idx_appointments_unique_slot')) {
+        throw new Error('⚠️ Este horário não está mais disponível. Outro cliente acabou de agendar neste mesmo horário. Por favor, escolha outro horário.');
+      }
+      
+      // Outros erros de duplicação ou conflito
       if (error.message?.includes('duplicate') || error.message?.includes('conflict')) {
         throw new Error('Este horário não está mais disponível. Por favor, escolha outro horário.');
       }
       
+      console.error('❌ Erro ao criar agendamento:', error);
       throw error;
     }
     
@@ -425,6 +456,25 @@ const createAppointmentOriginal = async (appointmentData: AppointmentData) => {
 };
 
 /**
+ * Detecta se o navegador suporta codificação correta de emojis Unicode
+ */
+export const supportsEmojiEncoding = (): boolean => {
+  if (typeof navigator === 'undefined') return false;
+  
+  // Safari (iOS e macOS) e modo anônimo têm problemas com codificação de emojis
+  const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isPrivateMode = navigator.userAgent.includes('Safari') && navigator.userAgent.includes('Version');
+  
+  // Chrome Android e Firefox geralmente funcionam bem
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const isChrome = /Chrome/i.test(navigator.userAgent);
+  
+  // Retorna true se for Android Chrome ou outros navegadores que não sejam Safari
+  return (isAndroid && isChrome) || (!isSafari && !isIOS);
+};
+
+/**
  * Gera mensagem do WhatsApp para agendamento
  */
 export const generateWhatsAppMessage = (
@@ -433,20 +483,41 @@ export const generateWhatsAppMessage = (
   date: string,
   time: string,
   serviceName: string,
-  professionalName?: string
+  professionalName?: string,
+  useEmojis?: boolean
 ): string => {
+  // Se useEmojis não foi especificado, detecta automaticamente baseado no suporte do navegador
+  const shouldUseEmojis = useEmojis !== undefined ? useEmojis : supportsEmojiEncoding();
+  
   let message = `Olá! Novo agendamento realizado:\n\n`;
-  message += `👤 Cliente: ${clientName}\n`;
-  message += `📞 Telefone: ${clientPhone}\n`;
-  message += `📅 Data: ${date}\n`;
-  message += `⏰ Horário: ${time}\n`;
-  message += `💼 Serviço: ${serviceName}\n`;
   
-  if (professionalName) {
-    message += `👨‍💼 Profissional: ${professionalName}\n`;
+  if (shouldUseEmojis) {
+    // Versão com emojis para Android
+    message += `👤 Cliente: ${clientName}\n`;
+    message += `📞 Telefone: ${clientPhone}\n`;
+    message += `📅 Data: ${date}\n`;
+    message += `⏰ Horário: ${time}\n`;
+    message += `💼 Serviço: ${serviceName}\n`;
+    
+    if (professionalName) {
+      message += `👨‍💼 Profissional: ${professionalName}\n`;
+    }
+    
+    message += `\nAgendamento confirmado! ✅`;
+  } else {
+    // Versão sem emojis para iPhone/Computador/Aba anônima
+    message += `• Cliente: ${clientName}\n`;
+    message += `• Telefone: ${clientPhone}\n`;
+    message += `• Data: ${date}\n`;
+    message += `• Horário: ${time}\n`;
+    message += `• Serviço: ${serviceName}\n`;
+    
+    if (professionalName) {
+      message += `• Profissional: ${professionalName}\n`;
+    }
+    
+    message += `\nAgendamento confirmado!`;
   }
-  
-  message += `\nAgendamento confirmado! ✅`;
   
   return message;
 };

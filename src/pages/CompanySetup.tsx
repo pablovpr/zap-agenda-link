@@ -28,7 +28,6 @@ const CompanySetup = () => {
     if (isLoading || subscriptionLoading) return;
 
     if (!user) {
-      console.log('No user found, redirecting to auth');
       navigate('/auth');
       return;
     }
@@ -67,14 +66,21 @@ const CompanySetup = () => {
     if (!user) return;
 
     try {
-      console.log('Checking existing profile for user:', user.id);
       setCheckingProfile(true);
       setError(null);
       
       const profile = await fetchProfile(user.id);
-      console.log('Profile found:', profile);
       
+<<<<<<< HEAD
       // Pre-fill form if profile exists
+=======
+      if (profile?.company_name && profile.company_name.trim()) {
+        navigate('/', { replace: true });
+        return;
+      }
+      
+      // Profile exists but incomplete, pre-fill form
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
       if (profile) {
         if (profile.company_name) setCompanyName(profile.company_name);
         if (profile.business_type) setBusinessType(profile.business_type);
@@ -149,14 +155,34 @@ const CompanySetup = () => {
 
   const saveProfileAndRedirect = async () => {
     try {
+<<<<<<< HEAD
       setLoading(true);
+=======
+      
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
       const profileData = {
         company_name: companyName.trim(),
         business_type: businessType.trim() || null,
       };
 
+<<<<<<< HEAD
       await upsertProfile(user.id, profileData);
       await createDefaultSettings(user.id, companyName.trim());
+=======
+      const profile = await upsertProfile(user.id, profileData);
+
+      // Create default company settings (non-blocking)
+      try {
+        await createDefaultSettings(user.id, companyName.trim());
+      } catch (settingsError: any) {
+        console.error('Error creating default settings (non-blocking):', settingsError);
+        toast({
+          title: "Parcialmente configurado",
+          description: "Empresa criada, mas algumas configurações serão definidas depois.",
+          variant: "default",
+        });
+      }
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
 
       toast({
         title: "Empresa configurada com sucesso!",

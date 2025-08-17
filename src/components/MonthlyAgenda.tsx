@@ -52,7 +52,6 @@ const MonthlyAgenda = ({ onBack }: MonthlyAgendaProps) => {
   const handleDateClick = (date: Date) => {
     const dayAppointments = getAppointmentsForDate(date);
     if (dayAppointments.length > 0) {
-      console.log('Selecionando data:', format(date, 'yyyy-MM-dd'), 'com', dayAppointments.length, 'agendamentos');
       setSelectedDate(date);
     } else {
       // Mensagem quando não há agendamentos

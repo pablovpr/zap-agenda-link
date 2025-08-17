@@ -3,6 +3,7 @@ import QuickActions from './QuickActions';
 import PublicBookingLink from './PublicBookingLink';
 import WelcomeSection from './WelcomeSection';
 import TodayAppointmentsList from './TodayAppointmentsList';
+import RecentAppointmentsList from './RecentAppointmentsList';
 import RevenueCard from './RevenueCard';
 import MonthlyAgenda from '../MonthlyAgenda';
 import ReportsButton from '../reports/ReportsButton';
@@ -70,12 +71,28 @@ const DashboardContent = ({
             <MonthlyAgenda />
           </div>
 
+<<<<<<< HEAD
           {/* Agendamentos de Hoje - Agora abaixo do calendário */}
+=======
+          {/* Agendamentos de Hoje - Logo abaixo do calendário */}
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
           <TodayAppointmentsList 
             appointments={data.todayAppointmentsList} 
             loading={loading} 
             onRefresh={onRefreshData} 
           />
+
+          {/* Agendamentos Recentes - Após agendamentos de hoje */}
+          <RecentAppointmentsList 
+            appointments={data.recentAppointments} 
+            loading={loading} 
+            onRefresh={onRefreshData} 
+          />
+        </div>
+
+        <div className="space-y-4 md:space-y-6 min-w-0">
+          {/* Receitas de Hoje - Movido para a coluna da direita */}
+          <RevenueCard />
         </div>
 
         <div className="space-y-4 md:space-y-6 min-w-0">

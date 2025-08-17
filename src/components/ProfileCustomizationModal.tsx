@@ -156,7 +156,7 @@ const ProfileCustomizationModal = ({
     }
   };
   return <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[95vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Settings className="w-5 h-5 text-whatsapp-green" />
@@ -164,124 +164,101 @@ const ProfileCustomizationModal = ({
           </DialogTitle>
         </DialogHeader>
 
-        {loading ? <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-whatsapp-green"></div>
-          </div> : <form onSubmit={handleSubmit} className="space-y-6">
+        {loading ? <div className="flex items-center justify-center py-6">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-whatsapp-green"></div>
+          </div> : <form onSubmit={handleSubmit} className="space-y-4">
             {/* Informações básicas */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <User className="w-5 h-5" />
+            <div className="space-y-3">
+              <h3 className="text-base font-semibold flex items-center gap-2">
+                <User className="w-4 h-4" />
                 Informações Básicas
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Nome da Empresa *</Label>
-                  <Input id="companyName" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Ex: Salão Beleza & Estilo" required />
+              <div className="space-y-3">
+                <div>
+                  <Label htmlFor="companyName" className="text-sm">Nome da Empresa *</Label>
+                  <Input id="companyName" value={companyName} onChange={e => setCompanyName(e.target.value)} placeholder="Ex: Salão Beleza & Estilo" required className="text-sm" />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="businessType">Tipo de Negócio</Label>
-                  <Input id="businessType" value={businessType} onChange={e => setBusinessType(e.target.value)} placeholder="Ex: Salão de Beleza, Barbearia, Clínica" />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="address">Endereço</Label>
-                  <Input id="address" value={address} onChange={e => setAddress(e.target.value)} placeholder="Rua das Flores, 123 - Centro - Cidade/UF" />
+                <div>
+                  <Label htmlFor="businessType" className="text-sm">Tipo de Negócio</Label>
+                  <Input id="businessType" value={businessType} onChange={e => setBusinessType(e.target.value)} placeholder="Ex: Salão, Barbearia" className="text-sm" />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="phone">Telefone WhatsApp</Label>
-                  <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(11) 99999-9999" />
+                <div>
+                  <Label htmlFor="address" className="text-sm">Endereço</Label>
+                  <Input id="address" value={address} onChange={e => setAddress(e.target.value)} placeholder="Rua, número - Cidade/UF" className="text-sm" />
+                </div>
+
+                <div>
+                  <Label htmlFor="phone" className="text-sm">Telefone WhatsApp</Label>
+                  <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(11) 99999-9999" className="text-sm" />
                 </div>
               </div>
             </div>
 
             {/* Visual */}
-            <div className="space-y-4">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
-                <Palette className="w-5 h-5" />
+            <div className="space-y-3">
+              <h3 className="text-base font-semibold flex items-center gap-2">
+                <Palette className="w-4 h-4" />
                 Personalização Visual
               </h3>
 
-              <div className="space-y-4">
-                <div className="space-y-4">
-                  <Label className="flex items-center gap-2">
-                    <Upload className="w-4 h-4" />
-                    Logo da Empresa (Foto de Perfil)
+              <div className="space-y-3">
+                <div>
+                  <Label className="flex items-center gap-2 text-sm">
+                    <Upload className="w-3 h-3" />
+                    Logo da Empresa
                   </Label>
                   
                   {/* Upload da Logo */}
                   <ImageUpload currentImageUrl={logoUrl} onImageUploaded={setLogoUrl} bucket="company-logos" className="bg-green-50" />
                   
-                  {/* Preview da Logo na Página Pública */}
-                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <Label className="text-sm font-medium text-gray-700 mb-3 block">Preview: Como ficará na página pública</Label>
+                  {/* Preview Compacto */}
+                  <div className="bg-gray-50 border border-gray-200 rounded-lg p-3">
+                    <Label className="text-xs font-medium text-gray-700 mb-2 block">Preview</Label>
                     
-                    <div className="bg-white rounded-lg p-4 shadow-sm">
-                      {/* Simulação do cabeçalho da página pública */}
-                      <div className="text-center space-y-3">
+                    <div className="bg-white rounded-lg p-3 shadow-sm">
+                      <div className="text-center space-y-2">
                         {/* Logo Preview */}
                         <div className="flex justify-center">
-                          <div className="relative">
-                            <div className="w-[80px] h-[80px] rounded-full border-4 border-white shadow-lg overflow-hidden bg-gray-100">
-                              {logoUrl ? <img src={logoUrl} alt="Preview da logo" className="w-full h-full object-cover" onError={e => {
-                            const target = e.target as HTMLImageElement;
-                            target.style.display = 'none';
-                          }} /> : <div className="w-full h-full flex items-center justify-center text-gray-400">
-                                  <Upload className="w-6 h-6" />
-                                </div>}
-                            </div>
-                            {/* Sombra 3D simulada */}
-                            <div className="absolute inset-0 rounded-full shadow-xl pointer-events-none opacity-30"></div>
+                          <div className="w-[50px] h-[50px] rounded-full border-2 border-white shadow-lg overflow-hidden bg-gray-100">
+                            {logoUrl ? <img src={logoUrl} alt="Preview da logo" className="w-full h-full object-cover" onError={e => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                        }} /> : <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                <Upload className="w-4 h-4" />
+                              </div>}
                           </div>
                         </div>
                         
                         {/* Informações da empresa */}
                         <div>
-                          <h4 className="font-semibold text-gray-800 text-sm">
+                          <h4 className="font-semibold text-gray-800 text-xs">
                             {companyName || 'Nome da Empresa'}
                           </h4>
                           {businessType && <p className="text-xs text-gray-600 mt-1">
                               {businessType}
                             </p>}
-                          {address && <p className="text-xs text-gray-500 mt-1">
-                              {address}
-                            </p>}
                         </div>
-                        
-                        {/* Botão simulado */}
-                        
                       </div>
                     </div>
-                    
-                    
                   </div>
-                  
-                  <p className="text-xs text-gray-500">
-                    💡 A logo será exibida em formato circular com sombra 3D na página pública
-                  </p>
                 </div>
 
                 {/* Personalização Avançada */}
-                <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-6">
+                <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-3">
                   <div className="text-center">
-                    <Palette className="w-12 h-12 text-blue-600 mx-auto mb-4" />
-                    <h4 className="text-lg font-semibold text-blue-900 mb-2">
-                      Personalização Completa da Página Pública
+                    <h4 className="text-sm font-semibold text-blue-900 mb-2">
+                      Personalização Completa
                     </h4>
                     
-                    
-                    
-                    
                     <div className="flex gap-2 justify-center">
-                      <Button type="button" variant="outline" size="sm" onClick={() => window.open('/theme-customization', '_blank')} className="border-blue-300 text-blue-700 hover:bg-blue-100">
-                        🎨 Configurar Tema
+                      <Button type="button" variant="outline" size="sm" onClick={() => window.open('/theme-customization', '_blank')} className="border-blue-300 text-blue-700 hover:bg-blue-100 text-xs">
+                        🎨 Tema
                       </Button>
-                      <Button type="button" variant="outline" size="sm" onClick={() => window.open('/cover-settings', '_blank')} className="border-blue-300 text-blue-700 hover:bg-blue-100">
-                        📸 Configurar Capa
+                      <Button type="button" variant="outline" size="sm" onClick={() => window.open('/cover-settings', '_blank')} className="border-blue-300 text-blue-700 hover:bg-blue-100 text-xs">
+                        📸 Capa
                       </Button>
                     </div>
                   </div>
@@ -292,12 +269,12 @@ const ProfileCustomizationModal = ({
 
 
             {/* Botões */}
-            <div className="flex justify-end gap-3 pt-4">
-              <Button type="button" variant="outline" onClick={onClose}>
+            <div className="flex gap-2 pt-3">
+              <Button type="button" variant="outline" onClick={onClose} className="flex-1 text-sm">
                 Cancelar
               </Button>
-              <Button type="submit" disabled={submitting} className="bg-whatsapp-green hover:bg-green-600">
-                {submitting ? "Salvando..." : "Salvar Perfil"}
+              <Button type="submit" disabled={submitting} className="bg-whatsapp-green hover:bg-green-600 flex-1 text-sm">
+                {submitting ? "Salvando..." : "Salvar"}
               </Button>
             </div>
           </form>}

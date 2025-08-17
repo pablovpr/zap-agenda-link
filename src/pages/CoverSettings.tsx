@@ -47,7 +47,6 @@ const CoverSettings = () => {
     return null;
   }
   const handleSaveCover = async (coverUrl: string) => {
-    console.log('Salvando foto de capa:', coverUrl);
     try {
       const {
         error

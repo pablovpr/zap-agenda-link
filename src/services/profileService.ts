@@ -11,6 +11,10 @@ export interface Profile {
 }
 
 export const fetchProfile = async (userId: string): Promise<Profile | null> => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   try {
     const { data, error } = await supabase
       .from('profiles')
@@ -35,6 +39,10 @@ export const fetchProfile = async (userId: string): Promise<Profile | null> => {
 };
 
 export const upsertProfile = async (userId: string, profileData: Partial<Profile>): Promise<Profile> => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   try {
     // Preparar dados para upsert
     const dataToUpsert = {
@@ -69,9 +77,17 @@ export const upsertProfile = async (userId: string, profileData: Partial<Profile
 };
 
 export const updateProfile = async (userId: string, updates: Partial<Profile>): Promise<Profile> => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   return upsertProfile(userId, updates);
 };
 
 export const createProfile = async (userId: string, profileData: Partial<Profile>): Promise<Profile> => {
+<<<<<<< HEAD
+=======
+  
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
   return upsertProfile(userId, profileData);
 };

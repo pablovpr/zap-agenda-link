@@ -120,8 +120,33 @@ export const useDashboardData = (companyName?: string) => {
         return total + (apt.services?.price || 0);
       }, 0);
 
+<<<<<<< HEAD
       // Format data efficiently
       const formattedTodayList = todayAppointments.map((apt: any) => ({
+=======
+      // Recent appointments - ordenar por data e hora do agendamento
+      const { data: recentAppointments, error: recentError } = await supabase
+        .from('appointments')
+        .select(`
+          id,
+          appointment_date,
+          appointment_time,
+          status,
+          clients(name, phone),
+          services(name)
+        `)
+        .eq('company_id', user.id)
+        .order('appointment_date', { ascending: false })
+        .order('appointment_time', { ascending: false })
+        .limit(50);
+
+      if (recentError) {
+        console.error('Error fetching recent appointments:', recentError);
+      }
+
+      // Format data
+      const formattedTodayList = (todayAppointments || []).map((apt: any) => ({
+>>>>>>> 89d79ac5197a410ea5db373514bd9663989ec539
         id: apt.id,
         appointment_time: apt.appointment_time,
         status: apt.status,

@@ -72,7 +72,6 @@ const ClientLogin = ({ companyData, onLoginSuccess }: ClientLoginProps) => {
     try {
       // Extrair apenas o primeiro nome antes de salvar
       const firstName = extractFirstName(clientName.trim());
-      console.log('👤 Salvando cliente com primeiro nome:', firstName);
 
       // Criar cliente no banco com apenas o primeiro nome
       const { data: newClient, error } = await supabase

@@ -37,7 +37,6 @@ export const useMonthlyAppointments = (currentDate: Date) => {
       const startDate = formatToBrasilia(monthStart, 'yyyy-MM-dd');
       const endDate = formatToBrasilia(monthEnd, 'yyyy-MM-dd');
       
-      console.log('Carregando agendamentos para o período:', startDate, 'até', endDate);
       
       const { data: appointmentData, error } = await supabase
         .from('appointments')
@@ -61,7 +60,6 @@ export const useMonthlyAppointments = (currentDate: Date) => {
         return;
       }
 
-      console.log('Agendamentos encontrados:', appointmentData?.length || 0);
 
       const processedAppointments: Appointment[] = (appointmentData || []).map(apt => ({
         id: apt.id,
@@ -74,7 +72,6 @@ export const useMonthlyAppointments = (currentDate: Date) => {
       }));
 
       setAppointments(processedAppointments);
-      console.log('Total de agendamentos processados:', processedAppointments.length);
 
     } catch (error) {
       console.error('Erro ao carregar agendamentos:', error);
