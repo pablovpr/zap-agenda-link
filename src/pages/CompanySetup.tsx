@@ -26,7 +26,6 @@ const CompanySetup = () => {
     if (isLoading) return;
 
     if (!user) {
-      console.log('No user found, redirecting to auth');
       navigate('/auth');
       return;
     }
@@ -38,15 +37,12 @@ const CompanySetup = () => {
     if (!user) return;
 
     try {
-      console.log('Checking existing profile for user:', user.id);
       setCheckingProfile(true);
       setError(null);
       
       const profile = await fetchProfile(user.id);
-      console.log('Profile found:', profile);
       
       if (profile?.company_name && profile.company_name.trim()) {
-        console.log('Profile is complete, redirecting to main app');
         navigate('/', { replace: true });
         return;
       }
@@ -93,22 +89,17 @@ const CompanySetup = () => {
     setError(null);
 
     try {
-      console.log('Starting company setup process for user:', user.id);
       
       const profileData = {
         company_name: companyName.trim(),
         business_type: businessType.trim() || null,
       };
 
-      console.log('Attempting to save profile with data:', profileData);
       const profile = await upsertProfile(user.id, profileData);
-      console.log('Profile saved successfully:', profile);
 
       // Create default company settings (non-blocking)
       try {
-        console.log('Creating default company settings...');
         await createDefaultSettings(user.id, companyName.trim());
-        console.log('Default settings created successfully');
       } catch (settingsError: any) {
         console.error('Error creating default settings (non-blocking):', settingsError);
         toast({

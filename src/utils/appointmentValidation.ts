@@ -16,12 +16,6 @@ export const validateAppointmentSlot = async (
   serviceDuration: number
 ): Promise<AppointmentConflict> => {
   try {
-    console.log('🔍 Validando slot de agendamento:', {
-      companyId,
-      appointmentDate,
-      appointmentTime,
-      serviceDuration
-    });
 
     // Buscar todos os agendamentos do dia que não foram cancelados
     const { data: existingAppointments, error } = await supabase
@@ -42,7 +36,6 @@ export const validateAppointmentSlot = async (
     }
 
     if (!existingAppointments || existingAppointments.length === 0) {
-      console.log('✅ Nenhum agendamento existente, slot disponível');
       return { hasConflict: false };
     }
 
@@ -64,12 +57,6 @@ export const validateAppointmentSlot = async (
       const existingStartMinutes = existingHours * 60 + existingMins;
       const existingEndMinutes = existingStartMinutes + (existing.duration || 60);
 
-      console.log('🔍 Verificando conflito com:', {
-        existing: existingTime,
-        duration: existing.duration,
-        service: existing.services?.name,
-        client: existing.clients?.name
-      });
 
       // Verificar sobreposição de horários
       const hasOverlap = (
@@ -89,7 +76,6 @@ export const validateAppointmentSlot = async (
       }
     }
 
-    console.log('✅ Nenhum conflito detectado, slot disponível');
     return { hasConflict: false };
 
   } catch (error) {

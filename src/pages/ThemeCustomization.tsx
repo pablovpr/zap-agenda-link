@@ -14,7 +14,6 @@ const ThemeCustomization = () => {
     return null;
   }
   const handleSaveTheme = (settings: any) => {
-    console.log('Tema salvo:', settings);
     // Callback já é tratado pelo PublicThemeCustomizer
   };
   return <div className="min-h-screen bg-gray-50">

@@ -172,14 +172,12 @@ const generateSimpleTimeSlots = (
   if (isToday) {
     try {
       currentTime = getCurrentTimeInBrazil();
-      console.log('⏰ [HOJE] Hora atual obtida:', currentTime);
     } catch (error) {
       console.error('❌ Erro ao obter hora atual, usando fallback:', error);
       // Fallback: calcular hora atual manualmente
       const now = new Date();
       const brazilTime = new Date(now.toLocaleString("en-US", {timeZone: "America/Sao_Paulo"}));
       currentTime = `${brazilTime.getHours().toString().padStart(2, '0')}:${brazilTime.getMinutes().toString().padStart(2, '0')}`;
-      console.log('⏰ [FALLBACK] Hora calculada:', currentTime);
     }
   }
 

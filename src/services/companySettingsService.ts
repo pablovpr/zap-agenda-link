@@ -2,7 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export const fetchCompanySettings = async (userId: string) => {
-  console.log('🔍 fetchCompanySettings: Buscando configurações para usuário:', userId);
   
   try {
     const { data, error } = await supabase
@@ -16,7 +15,6 @@ export const fetchCompanySettings = async (userId: string) => {
       throw new Error(`Erro ao buscar configurações: ${error.message}`);
     }
 
-    console.log('✅ fetchCompanySettings: Configurações encontradas:', data);
     return data;
   } catch (error: any) {
     console.error('❌ fetchCompanySettings: Erro no serviço:', error);
@@ -25,19 +23,16 @@ export const fetchCompanySettings = async (userId: string) => {
 };
 
 export const createDefaultSettings = async (userId: string, companyName: string): Promise<void> => {
-  console.log('🚀 createDefaultSettings: Criando configurações padrão para:', userId, companyName);
   
   try {
     // Verificar se já existem configurações
     const existingSettings = await fetchCompanySettings(userId);
     if (existingSettings) {
-      console.log('ℹ️ createDefaultSettings: Configurações já existem, pulando criação');
       return;
     }
 
     // Gerar slug único
     const slug = await generateUniqueSlug(companyName);
-    console.log('📝 createDefaultSettings: Slug gerado:', slug);
     
     const defaultSettings = {
       company_id: userId,
@@ -63,7 +58,6 @@ export const createDefaultSettings = async (userId: string, companyName: string)
       throw new Error(`Erro ao criar configurações: ${error.message}`);
     }
 
-    console.log('✅ createDefaultSettings: Configurações criadas com sucesso');
   } catch (error: any) {
     console.error('❌ createDefaultSettings: Erro no serviço:', error);
     throw error;
@@ -147,7 +141,6 @@ export const updateCompanySlug = async (userId: string, newSlug: string): Promis
       throw new Error(`Erro ao atualizar slug: ${error.message}`);
     }
 
-    console.log('✅ updateCompanySlug: Slug atualizado com sucesso');
     return true;
   } catch (error: any) {
     console.error('❌ updateCompanySlug: Erro no serviço:', error);
@@ -214,8 +207,6 @@ export const updateCompanySettings = async (
   userId: string, 
   settings: CompanySettingsUpdate
 ): Promise<void> => {
-  console.log('🔄 updateCompanySettings: Atualizando configurações para usuário:', userId);
-  console.log('📝 updateCompanySettings: Dados:', settings);
   
   try {
     const { error } = await supabase
@@ -231,7 +222,6 @@ export const updateCompanySettings = async (
       throw new Error(`Erro ao atualizar configurações: ${error.message}`);
     }
 
-    console.log('✅ updateCompanySettings: Configurações atualizadas com sucesso');
   } catch (error: any) {
     console.error('❌ updateCompanySettings: Erro no serviço:', error);
     throw error;
@@ -243,8 +233,6 @@ export const updateCompanyProfile = async (
   userId: string, 
   profile: ProfileUpdate
 ): Promise<void> => {
-  console.log('🔄 updateCompanyProfile: Atualizando perfil para usuário:', userId);
-  console.log('📝 updateCompanyProfile: Dados:', profile);
   
   try {
     const { error } = await supabase
@@ -260,7 +248,6 @@ export const updateCompanyProfile = async (
       throw new Error(`Erro ao atualizar perfil: ${error.message}`);
     }
 
-    console.log('✅ updateCompanyProfile: Perfil atualizado com sucesso');
   } catch (error: any) {
     console.error('❌ updateCompanyProfile: Erro no serviço:', error);
     throw error;
@@ -269,7 +256,6 @@ export const updateCompanyProfile = async (
 
 // Função para buscar perfil da empresa
 export const fetchCompanyProfile = async (userId: string) => {
-  console.log('🔍 fetchCompanyProfile: Buscando perfil para usuário:', userId);
   
   try {
     const { data, error } = await supabase
@@ -283,7 +269,6 @@ export const fetchCompanyProfile = async (userId: string) => {
       throw new Error(`Erro ao buscar perfil: ${error.message}`);
     }
 
-    console.log('✅ fetchCompanyProfile: Perfil encontrado:', data);
     return data;
   } catch (error: any) {
     console.error('❌ fetchCompanyProfile: Erro no serviço:', error);
@@ -297,7 +282,6 @@ export const saveAllSettings = async (
   settings: CompanySettingsUpdate,
   profile: ProfileUpdate
 ): Promise<void> => {
-  console.log('💾 saveAllSettings: Salvando todas as configurações para usuário:', userId);
   
   try {
     // Atualizar configurações e perfil em paralelo
@@ -306,7 +290,6 @@ export const saveAllSettings = async (
       updateCompanyProfile(userId, profile)
     ]);
 
-    console.log('✅ saveAllSettings: Todas as configurações salvas com sucesso');
   } catch (error: any) {
     console.error('❌ saveAllSettings: Erro ao salvar:', error);
     throw error;

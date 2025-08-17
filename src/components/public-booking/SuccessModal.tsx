@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { CheckCircle, Calendar, MessageCircle, Sparkles, Copy, Check } from 'lucide-react';
 import { formatToBrasilia } from '@/utils/timezone';
+import { supportsEmojiEncoding } from '@/services/appointmentService';
 
 interface SuccessModalProps {
   isOpen: boolean;
@@ -59,14 +60,25 @@ const SuccessModal: React.FC<SuccessModalProps> = ({
   };
 
   const generateWhatsAppMessage = () => {
-    const message = `Olá! Acabei de agendar um horário:
-
-📅 *Serviço:* ${appointmentData.serviceName}
-📅 *Data:* ${formatDate(appointmentData.date)}
-⏰ *Horário:* ${appointmentData.time}
-👤 *Nome:* ${appointmentData.clientName}
-
-Agendamento confirmado! ✅`;
+    const shouldUseEmojis = supportsEmojiEncoding();
+    
+    let message = `Olá! Acabei de agendar um horário:\n\n`;
+    
+    if (shouldUseEmojis) {
+      // Versão com emojis para Android
+      message += `📅 *Serviço:* ${appointmentData.serviceName}\n`;
+      message += `📅 *Data:* ${formatDate(appointmentData.date)}\n`;
+      message += `⏰ *Horário:* ${appointmentData.time}\n`;
+      message += `👤 *Nome:* ${appointmentData.clientName}\n\n`;
+      message += `Agendamento confirmado! ✅`;
+    } else {
+      // Versão sem emojis para iPhone/Computador/Aba anônima
+      message += `• *Serviço:* ${appointmentData.serviceName}\n`;
+      message += `• *Data:* ${formatDate(appointmentData.date)}\n`;
+      message += `• *Horário:* ${appointmentData.time}\n`;
+      message += `• *Nome:* ${appointmentData.clientName}\n\n`;
+      message += `Agendamento confirmado!`;
+    }
 
     const whatsappUrl = `https://wa.me/${appointmentData.companyPhone?.replace(/\D/g, '')}?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');

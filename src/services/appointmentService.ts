@@ -255,7 +255,6 @@ const checkTimeSlotAvailability = async (
       const [aptHours, aptMinutes] = aptTime.split(':').map(Number);
       const aptStartMinutes = aptHours * 60 + aptMinutes;
 
-      console.log(`🔍 Verificando conflito com agendamento ${aptTime} (${aptDuration}min)`);
 
       // LÓGICA DE BLOQUEIO: Verificar se há sobreposição
       // Agendamento existente ocupa slots baseado na sua duração
@@ -387,13 +386,6 @@ const createAppointmentOriginal = async (appointmentData: AppointmentData) => {
     }
 
     // INSERÇÃO COM VERIFICAÇÃO FINAL: Usar uma transação para garantir atomicidade
-    console.log('🔒 Tentando criar agendamento:', {
-      company_id: appointmentData.company_id,
-      appointment_date: appointmentData.appointment_date,
-      appointment_time: appointmentData.appointment_time,
-      client_name: appointmentData.client_name,
-      timestamp: new Date().toISOString()
-    });
 
     const { data, error } = await supabase
       .from('appointments')
@@ -458,6 +450,25 @@ const createAppointmentOriginal = async (appointmentData: AppointmentData) => {
 };
 
 /**
+ * Detecta se o navegador suporta codificação correta de emojis Unicode
+ */
+export const supportsEmojiEncoding = (): boolean => {
+  if (typeof navigator === 'undefined') return false;
+  
+  // Safari (iOS e macOS) e modo anônimo têm problemas com codificação de emojis
+  const isSafari = /Safari/i.test(navigator.userAgent) && !/Chrome/i.test(navigator.userAgent);
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+  const isPrivateMode = navigator.userAgent.includes('Safari') && navigator.userAgent.includes('Version');
+  
+  // Chrome Android e Firefox geralmente funcionam bem
+  const isAndroid = /Android/i.test(navigator.userAgent);
+  const isChrome = /Chrome/i.test(navigator.userAgent);
+  
+  // Retorna true se for Android Chrome ou outros navegadores que não sejam Safari
+  return (isAndroid && isChrome) || (!isSafari && !isIOS);
+};
+
+/**
  * Gera mensagem do WhatsApp para agendamento
  */
 export const generateWhatsAppMessage = (
@@ -466,20 +477,41 @@ export const generateWhatsAppMessage = (
   date: string,
   time: string,
   serviceName: string,
-  professionalName?: string
+  professionalName?: string,
+  useEmojis?: boolean
 ): string => {
+  // Se useEmojis não foi especificado, detecta automaticamente baseado no suporte do navegador
+  const shouldUseEmojis = useEmojis !== undefined ? useEmojis : supportsEmojiEncoding();
+  
   let message = `Olá! Novo agendamento realizado:\n\n`;
-  message += `👤 Cliente: ${clientName}\n`;
-  message += `📞 Telefone: ${clientPhone}\n`;
-  message += `📅 Data: ${date}\n`;
-  message += `⏰ Horário: ${time}\n`;
-  message += `💼 Serviço: ${serviceName}\n`;
   
-  if (professionalName) {
-    message += `👨‍💼 Profissional: ${professionalName}\n`;
+  if (shouldUseEmojis) {
+    // Versão com emojis para Android
+    message += `👤 Cliente: ${clientName}\n`;
+    message += `📞 Telefone: ${clientPhone}\n`;
+    message += `📅 Data: ${date}\n`;
+    message += `⏰ Horário: ${time}\n`;
+    message += `💼 Serviço: ${serviceName}\n`;
+    
+    if (professionalName) {
+      message += `👨‍💼 Profissional: ${professionalName}\n`;
+    }
+    
+    message += `\nAgendamento confirmado! ✅`;
+  } else {
+    // Versão sem emojis para iPhone/Computador/Aba anônima
+    message += `• Cliente: ${clientName}\n`;
+    message += `• Telefone: ${clientPhone}\n`;
+    message += `• Data: ${date}\n`;
+    message += `• Horário: ${time}\n`;
+    message += `• Serviço: ${serviceName}\n`;
+    
+    if (professionalName) {
+      message += `• Profissional: ${professionalName}\n`;
+    }
+    
+    message += `\nAgendamento confirmado!`;
   }
-  
-  message += `\nAgendamento confirmado! ✅`;
   
   return message;
 };

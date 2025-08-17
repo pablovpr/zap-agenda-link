@@ -59,7 +59,6 @@ const NewAppointmentModal = ({ isOpen, onClose, onSuccess }: NewAppointmentModal
   // New client form states
   const [newClientName, setNewClientName] = useState('');
   const [newClientPhone, setNewClientPhone] = useState('');
-  const [newClientEmail, setNewClientEmail] = useState('');
   const [existingClientByPhone, setExistingClientByPhone] = useState<Client | null>(null);
   const [checkingPhone, setCheckingPhone] = useState(false);
 
@@ -99,7 +98,6 @@ const NewAppointmentModal = ({ isOpen, onClose, onSuccess }: NewAppointmentModal
     setShowClientSelector(false);
     setNewClientName('');
     setNewClientPhone('');
-    setNewClientEmail('');
     setExistingClientByPhone(null);
     setSelectedService(null);
     setSelectedProfessional('');
@@ -123,9 +121,6 @@ const NewAppointmentModal = ({ isOpen, onClose, onSuccess }: NewAppointmentModal
       // Se encontrou um cliente, preenche automaticamente o nome
       if (existingClient && !newClientName) {
         setNewClientName(existingClient.name);
-        if (existingClient.email && !newClientEmail) {
-          setNewClientEmail(existingClient.email);
-        }
       }
     } catch (error) {
       console.error('Erro ao verificar cliente por telefone:', error);
@@ -284,7 +279,6 @@ const NewAppointmentModal = ({ isOpen, onClose, onSuccess }: NewAppointmentModal
         const { client: clientResult, isNew } = await createOrUpdateClient(user!.id, {
           name: newClientName,
           phone: newClientPhone,
-          email: newClientEmail || undefined
         });
 
         clientId = clientResult.id;
@@ -475,16 +469,6 @@ const NewAppointmentModal = ({ isOpen, onClose, onSuccess }: NewAppointmentModal
                           </p>
                         )}
                       </div>
-                      <div>
-                        <Label htmlFor="new-client-email" className="text-sm">Email</Label>
-                        <Input
-                          id="new-client-email"
-                          type="email"
-                          placeholder="email@exemplo.com"
-                          value={newClientEmail}
-                          onChange={(e) => setNewClientEmail(e.target.value)}
-                        />
-                      </div>
                     </div>
                   )}
                 </div>
@@ -602,6 +586,7 @@ const NewAppointmentModal = ({ isOpen, onClose, onSuccess }: NewAppointmentModal
                       setSelectedTime(''); // Reset time when date changes
                     }}
                     disabled={(date) => date < new Date()}
+                    locale={ptBR}
                     initialFocus
                   />
                 </PopoverContent>

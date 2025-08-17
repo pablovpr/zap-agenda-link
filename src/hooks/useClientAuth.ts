@@ -38,7 +38,6 @@ export const useClientAuth = () => {
   const loginWithPhone = async (phone: string, companyId: string) => {
     setLoading(true);
     try {
-      console.log('🔍 Buscando cliente pelo telefone:', phone);
       
       // Verificar se cliente já existe pelo telefone
       const { data: existingClient, error } = await supabase
@@ -54,7 +53,6 @@ export const useClientAuth = () => {
 
       if (existingClient) {
         // Cliente existente - fazer login
-        console.log('✅ Cliente encontrado:', existingClient.name);
         const clientData = {
           id: existingClient.id,
           name: existingClient.name,
@@ -69,7 +67,6 @@ export const useClientAuth = () => {
         return { isFirstTime: false, client: clientData };
       } else {
         // Primeiro acesso - apenas armazenar telefone
-        console.log('📱 Primeiro acesso para o telefone:', phone);
         localStorage.setItem('zapagenda_temp_phone', phone);
         return { isFirstTime: true, phone };
       }
@@ -89,7 +86,6 @@ export const useClientAuth = () => {
       name: firstName
     };
     
-    console.log('📝 Completando registro com primeiro nome:', firstName);
     
     setCurrentClient(updatedClientData);
     setIsAuthenticated(true);

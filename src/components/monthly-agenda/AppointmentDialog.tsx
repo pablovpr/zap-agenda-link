@@ -43,20 +43,20 @@ const AppointmentDialog = ({
 
   return (
     <Dialog open={!!selectedDate} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto [&>button]:hidden">
-        <DialogHeader className="pb-4">
-          <DialogTitle className="flex items-center justify-between text-lg md:text-xl">
+      <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto [&>button]:hidden">
+        <DialogHeader className="pb-3">
+          <DialogTitle className="flex items-center justify-between text-base">
             <span className="flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-primary" />
-              Agendamentos de {format(selectedDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}
+              <Calendar className="w-4 h-4 text-primary" />
+              {format(selectedDate, "dd/MM", { locale: ptBR })} - {appointments.length} agendamento{appointments.length !== 1 ? 's' : ''}
             </span>
-            <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
-              <X className="w-4 h-4" />
+            <Button variant="ghost" size="sm" onClick={onClose} className="h-6 w-6 p-0">
+              <X className="w-3 h-3" />
             </Button>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-2">
           {appointments.map((appointment, index) => (
             <AppointmentCard
               key={appointment.id}

@@ -64,20 +64,20 @@ const AppointmentActions = ({
           variant="ghost" 
           size="sm"
           onClick={() => onWhatsAppClick(appointment.client_phone, appointment.client_name, appointment.appointment_date, appointment.appointment_time)}
-          className="h-8 w-8 p-0 text-green-600 hover:bg-green-50"
+          className="h-6 w-6 p-0 text-green-600 hover:bg-green-50"
           title="Enviar lembrete via WhatsApp"
         >
-          <MessageSquare className="w-4 h-4" />
+          <MessageSquare className="w-3 h-3" />
         </Button>
 
         <Button 
           variant="ghost" 
           size="sm"
           onClick={() => setShowEditDialog(true)}
-          className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50"
+          className="h-6 w-6 p-0 text-blue-600 hover:bg-blue-50"
           title="Editar agendamento"
         >
-          <Edit className="w-4 h-4" />
+          <Edit className="w-3 h-3" />
         </Button>
 
         <Button 
@@ -85,10 +85,10 @@ const AppointmentActions = ({
           size="sm"
           onClick={handleDelete}
           disabled={isDeleting}
-          className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+          className="h-6 w-6 p-0 text-red-600 hover:bg-red-50"
           title="Excluir agendamento"
         >
-          <Trash2 className="w-4 h-4" />
+          <Trash2 className="w-3 h-3" />
         </Button>
       </div>
 

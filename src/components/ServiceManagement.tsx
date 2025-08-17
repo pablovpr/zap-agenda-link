@@ -4,10 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Trash2, Plus, Edit, DollarSign, Clock } from 'lucide-react';
+import { Trash2, Edit } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -28,7 +26,6 @@ const ServiceManagement = () => {
   const { toast } = useToast();
   const [services, setServices] = useState<Service[]>([]);
   const [newServiceName, setNewServiceName] = useState('');
-  const [newServiceDescription, setNewServiceDescription] = useState('');
   const [newServiceDuration, setNewServiceDuration] = useState('');
   const [newServicePrice, setNewServicePrice] = useState('');
   const [editingServiceId, setEditingServiceId] = useState<string | null>(null);
@@ -93,7 +90,7 @@ const ServiceManagement = () => {
         .insert({
           company_id: user!.id,
           name: newServiceName,
-          description: newServiceDescription,
+          description: null,
           duration: parseInt(newServiceDuration),
           price: parseFloat(newServicePrice),
           is_active: true
@@ -105,7 +102,6 @@ const ServiceManagement = () => {
 
       setServices([data, ...services]);
       setNewServiceName('');
-      setNewServiceDescription('');
       setNewServiceDuration('');
       setNewServicePrice('');
 
@@ -254,14 +250,6 @@ const ServiceManagement = () => {
                   placeholder="0,00"
                 />
               </div>
-              <div className="col-span-1 md:col-span-3">
-                <Label htmlFor="new-service-description">Descrição</Label>
-                <Textarea
-                  id="new-service-description"
-                  value={newServiceDescription}
-                  onChange={(e) => setNewServiceDescription(e.target.value)}
-                />
-              </div>
               <div className="md:col-span-3">
                 <Button className="w-full" onClick={handleCreateService}>
                   Criar Serviço
@@ -321,40 +309,37 @@ const ServiceManagement = () => {
                       </div>
                     </div>
                   ) : (
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-lg">{service.name}</h4>
-                        <p className="text-sm text-gray-500 mb-2">{service.description}</p>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge variant="secondary" className="flex items-center gap-1">
-                            <Clock className="w-3 h-3" />
-                            {service.duration} min
-                          </Badge>
-                          <Badge variant="outline" className="flex items-center gap-1">
-                            <DollarSign className="w-3 h-3" />
-                            R$ {service.price.toFixed(2)}
-                          </Badge>
-                        </div>
+                    <div className="space-y-3">
+                      {/* Primeira linha: Nome do serviço */}
+                      <div>
+                        <h4 className="font-semibold text-lg text-gray-800">{service.name}</h4>
                       </div>
-                      <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                      
+                      {/* Segunda linha: Tempo + Preço */}
+                      <div className="text-sm text-gray-600">
+                        <span>{service.duration} min • R$ {service.price.toFixed(2)}</span>
+                      </div>
+                      
+                      {/* Terceira linha: Ícones de ação */}
+                      <div className="flex gap-2">
                         <Button 
                           size="sm" 
-                          variant="secondary" 
+                          variant="ghost" 
                           onClick={() => handleEditService(service)}
-                          className="w-full sm:w-auto text-sm"
+                          className="h-8 w-8 p-0 text-blue-600 hover:bg-blue-50"
+                          title="Editar serviço"
                         >
-                          <Edit className="w-4 h-4 mr-1" />
-                          Editar
+                          <Edit className="w-4 h-4" />
                         </Button>
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <Button 
                               size="sm" 
-                              variant="destructive"
-                              className="w-full sm:w-auto text-sm"
+                              variant="ghost"
+                              className="h-8 w-8 p-0 text-red-600 hover:bg-red-50"
+                              title="Excluir serviço"
                             >
-                              <Trash2 className="w-4 h-4 mr-1" />
-                              Excluir
+                              <Trash2 className="w-4 h-4" />
                             </Button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>

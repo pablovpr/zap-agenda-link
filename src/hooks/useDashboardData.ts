@@ -115,7 +115,7 @@ export const useDashboardData = (companyName?: string) => {
         .eq('company_id', user.id)
         .order('appointment_date', { ascending: false })
         .order('appointment_time', { ascending: false })
-        .limit(5);
+        .limit(50);
 
       if (recentError) {
         console.error('Error fetching recent appointments:', recentError);

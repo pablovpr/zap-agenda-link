@@ -1,10 +1,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Calendar, Clock, Phone, User, CheckCircle, MessageSquare } from 'lucide-react';
+import { Calendar, Clock, User, CheckCircle } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useAppointmentActions } from '@/hooks/useAppointmentActions';
-import { useToast } from '@/hooks/use-toast';
+import { usePagination } from '@/hooks/usePagination';
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink 
+} from '@/components/ui/pagination';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface RecentAppointment {
   id: string;
@@ -27,36 +32,21 @@ const RecentAppointmentsList = ({
   loading,
   onRefresh
 }: RecentAppointmentsListProps) => {
-  const { completeAppointment, isUpdating } = useAppointmentActions();
-  const { toast } = useToast();
-
-  const handleCompleteAppointment = async (appointmentId: string, clientName: string) => {
-    try {
-      await completeAppointment(appointmentId, clientName, () => {
-        if (onRefresh) {
-          onRefresh();
-        }
-        window.dispatchEvent(new CustomEvent('appointmentCompleted'));
-      });
-    } catch (error) {
-      console.error('Erro ao marcar como concluído:', error);
-    }
-  };
-
-  const handleWhatsAppClick = (phone: string, clientName: string, appointmentDate: string, appointmentTime: string) => {
-    const cleanPhone = phone.replace(/\D/g, '');
-    const formattedDate = format(new Date(appointmentDate + 'T12:00:00'), "dd 'de' MMMM", { locale: ptBR });
-    
-    const message = `Olá, ${clientName}! 👋\n\n` +
-      `🔔 *LEMBRETE DO SEU AGENDAMENTO*\n\n` +
-      `📅 *Data:* ${formattedDate}\n` +
-      `⏰ *Horário:* ${appointmentTime.substring(0, 5)}\n\n` +
-      `Estamos esperando por você! ✨\n\n` +
-      `Se precisar de alguma coisa, estamos à disposição! 😊`;
-
-    const whatsappUrl = `https://wa.me/55${cleanPhone}?text=${encodeURIComponent(message)}`;
-    window.open(whatsappUrl, '_blank');
-  };
+  
+  // Paginação
+  const {
+    currentPage,
+    totalPages,
+    paginatedData,
+    goToPage,
+    hasNextPage,
+    hasPreviousPage,
+    startIndex,
+    endIndex
+  } = usePagination({
+    data: appointments,
+    itemsPerPage: 5
+  });
 
   if (loading) {
     return (
@@ -104,32 +94,79 @@ const RecentAppointmentsList = ({
       </CardHeader>
       <CardContent>
         <div className="space-y-2">
-          {appointments.map((appointment) => (
-            <div key={appointment.id} className="flex items-center justify-between p-3 rounded-lg border bg-gray-50 hover:bg-gray-100 transition-colors">
-              <div className="flex items-center gap-4 min-w-0 flex-1 text-sm">
-                <span className="font-medium text-gray-800 truncate">
-                  {appointment.client_name}
-                </span>
-                <span className="text-gray-600 truncate">
-                  {appointment.client_phone}
-                </span>
-                <span className="text-gray-600 flex-shrink-0">
-                  {format(new Date(appointment.appointment_date + 'T12:00:00'), 'dd/MM')}
-                </span>
-                <span className="text-gray-600 flex-shrink-0">
-                  {appointment.appointment_time.substring(0, 5)}
-                </span>
-              </div>
-              
-              {appointment.status === 'completed' && (
-                <div className="flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded flex-shrink-0">
-                  <CheckCircle className="w-3 h-3" />
-                  <span>Concluído</span>
+          {paginatedData.map((appointment) => (
+            <div key={appointment.id} className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors">
+              <div className="space-y-2">
+                {/* Primeira linha: Nome + Data + Horário */}
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                    <span className="font-medium text-gray-800 truncate text-sm">{appointment.client_name}</span>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 text-primary font-medium">
+                    <Clock className="w-4 h-4" />
+                    <span className="text-sm">
+                      {format(new Date(appointment.appointment_date + 'T12:00:00'), 'dd/MM')} às {appointment.appointment_time.substring(0, 5)}
+                    </span>
+                  </div>
                 </div>
-              )}
+                
+                {/* Segunda linha: Tipo de serviço */}
+                <div className="ml-6">
+                  <span className="text-xs text-gray-600">{appointment.service_name}</span>
+                  {appointment.status === 'completed' && (
+                    <span className="ml-2 inline-flex items-center gap-1 text-xs text-green-700 bg-green-100 px-2 py-1 rounded">
+                      <CheckCircle className="w-3 h-3" />
+                      Concluído
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           ))}
         </div>
+        
+        {/* Paginação */}
+        {totalPages > 1 && (
+          <div className="mt-4 pt-3 border-t border-gray-200">
+            <div className="flex justify-center">
+              <Pagination>
+                <PaginationContent className="gap-1">
+                  <PaginationItem>
+                    <PaginationLink 
+                      onClick={() => goToPage(currentPage - 1)}
+                      className={`h-8 w-8 text-sm ${!hasPreviousPage ? 'pointer-events-none opacity-50' : 'cursor-pointer hover:bg-gray-100'}`}
+                    >
+                      <ChevronLeft className="h-4 w-4" />
+                    </PaginationLink>
+                  </PaginationItem>
+                  
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                    <PaginationItem key={page}>
+                      <PaginationLink 
+                        onClick={() => goToPage(page)}
+                        isActive={currentPage === page}
+                        className="cursor-pointer h-8 w-8 text-sm"
+                      >
+                        {page}
+                      </PaginationLink>
+                    </PaginationItem>
+                  ))}
+                  
+                  <PaginationItem>
+                    <PaginationLink 
+                      onClick={() => goToPage(currentPage + 1)}
+                      className={`h-8 w-8 text-sm ${!hasNextPage ? 'pointer-events-none opacity-50' : 'cursor-pointer hover:bg-gray-100'}`}
+                    >
+                      <ChevronRight className="h-4 w-4" />
+                    </PaginationLink>
+                  </PaginationItem>
+                </PaginationContent>
+              </Pagination>
+            </div>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

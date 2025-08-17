@@ -343,33 +343,6 @@ const ClientManagement = () => {
                     className="border-whatsapp" 
                   />
                 </div>
-                <div>
-                  <Label htmlFor="email">Email</Label>
-                  <Input 
-                    id="email" 
-                    type="email"
-                    value={formData.email} 
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      email: e.target.value
-                    }))} 
-                    placeholder="email@exemplo.com" 
-                    className="border-whatsapp" 
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="notes">Observações</Label>
-                  <Textarea 
-                    id="notes" 
-                    value={formData.notes} 
-                    onChange={(e) => setFormData(prev => ({
-                      ...prev,
-                      notes: e.target.value
-                    }))} 
-                    placeholder="Observações sobre o cliente..." 
-                    className="border-whatsapp" 
-                  />
-                </div>
                 
                 <div className="flex gap-2 pt-4">
                   <Button 

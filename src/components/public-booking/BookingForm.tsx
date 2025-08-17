@@ -46,7 +46,6 @@ const BookingForm = ({
         const selectedServiceData = services.find(s => s.id === selectedService);
         const serviceDuration = selectedServiceData?.duration;
         
-        console.log('🔄 Carregando horários para:', { selectedDate, selectedService, serviceDuration });
         
         const times = await generateAvailableTimes(selectedDate, serviceDuration);
         setAvailableTimes(times);

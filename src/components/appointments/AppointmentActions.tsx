@@ -56,7 +56,6 @@ const AppointmentActions = ({
   const [isEditOpen, setIsEditOpen] = useState(false);
 
   const handleUpdate = async () => {
-    console.log('Atualizando agendamento:', { appointmentId, newDate, newTime, clientPhone, clientName });
     await updateAppointment(appointmentId, newDate, newTime, clientPhone, clientName, () => {
       setIsEditOpen(false);
       if (onSuccess) onSuccess();

@@ -26,7 +26,6 @@ const SettingsPanel = () => {
 
   // Real-time sync callbacks
   const handleSettingsSync = useCallback(() => {
-    console.log('🔄 Settings synced from real-time update');
     refreshSettings?.();
     toast({
       title: "Configurações atualizadas",
@@ -34,11 +33,9 @@ const SettingsPanel = () => {
     });
   }, [refreshSettings, toast]);
   const handleScheduleSync = useCallback(() => {
-    console.log('🔄 Schedule synced from real-time update');
     // Trigger schedule refresh if needed
   }, []);
   const handleCompanyDataSync = useCallback(() => {
-    console.log('🔄 Company data synced from real-time update');
     refreshSettings?.();
   }, [refreshSettings]);
 
@@ -105,7 +102,6 @@ const SettingsPanel = () => {
           
           <ScheduleSettings onScheduleUpdate={() => {
           // Callback quando os horários são atualizados
-          console.log('Horários atualizados com sucesso');
         }} />
         </TabsContent>
       </Tabs>

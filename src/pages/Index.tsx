@@ -10,7 +10,7 @@ import ServiceManagement from '../components/ServiceManagement';
 import ProfileCustomizationModal from '../components/ProfileCustomizationModal';
 import SupportModal from '../components/SupportModal';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, Calendar, Users, Briefcase, LogOut, HelpCircle, Palette } from 'lucide-react';
+import { MoreHorizontal, Briefcase, LogOut, HelpCircle, Palette } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -53,16 +53,13 @@ const Index = () => {
     // Check if profile is complete and get company name
     const checkProfile = async () => {
       try {
-        console.log('Checking profile for user:', user.id);
         const profileData = await fetchProfile(user.id);
 
         if (!profileData || !profileData.company_name) {
-          console.log('Profile incomplete, redirecting to company setup');
           navigate('/company-setup');
           return;
         }
 
-        console.log('Profile complete:', profileData);
         setCompanyName(profileData.company_name);
         setProfileComplete(true);
       } catch (error) {
@@ -151,18 +148,9 @@ const Index = () => {
                   <Briefcase className="w-4 h-4 mr-2" />
                   Dashboard
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setCurrentView('agenda')} className="hover:bg-gray-50">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Agenda Mensal
-                </DropdownMenuItem>
-                <DropdownMenuSeparator className="bg-whatsapp-border" />
                 <DropdownMenuItem onClick={() => setShowProfileModal(true)} className="hover:bg-gray-50">
                   <Palette className="w-4 h-4 mr-2" />
                   Personalizar Perfil
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setCurrentView('clients')} className="hover:bg-gray-50">
-                  <Users className="w-4 h-4 mr-2" />
-                  Gerenciar Clientes
                 </DropdownMenuItem>
                 <DropdownMenuItem onClick={() => setCurrentView('services')} className="hover:bg-gray-50">
                   <Briefcase className="w-4 h-4 mr-2" />

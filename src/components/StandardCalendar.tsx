@@ -54,8 +54,6 @@ const StandardCalendar = ({
       const dateString = format(date, 'yyyy-MM-dd', { timeZone: 'America/Sao_Paulo' });
       onDateSelect(dateString);
       
-      // Log para debug
-      console.log('📅 Data selecionada imediatamente:', dateString);
     }
   };
 

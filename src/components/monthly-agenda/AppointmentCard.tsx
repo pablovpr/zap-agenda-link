@@ -1,9 +1,8 @@
 
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Clock, User, MessageSquare } from 'lucide-react';
+import { Clock, User } from 'lucide-react';
 import AppointmentActions from './AppointmentActions';
-import AppointmentInfo from './AppointmentInfo';
 
 interface MonthlyAppointment {
   id: string;
@@ -66,34 +65,32 @@ const AppointmentCard = ({
 
   return (
     <div>
-      <div className="bg-white rounded-lg p-4 border border-gray-200 hover:bg-gray-50 transition-colors">
-        <div className="space-y-3">
-          {/* Primeira linha: Horário, Nome e Telefone */}
-          <div className="flex items-center gap-4 min-w-0">
+      <div className="bg-white rounded-lg p-3 border border-gray-200 hover:bg-gray-50 transition-colors">
+        <div className="space-y-2">
+          {/* Primeira linha: Horário + Nome do cliente */}
+          <div className="flex items-center gap-3">
             <div className="flex items-center gap-2 text-primary font-medium">
               <Clock className="w-4 h-4" />
-              <span>{appointment.appointment_time.substring(0, 5)}</span>
+              <span className="text-sm">{appointment.appointment_time.substring(0, 5)}</span>
             </div>
             
-            <div className="flex items-center gap-2 min-w-0">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
               <User className="w-4 h-4 text-gray-500 flex-shrink-0" />
-              <span className="font-medium text-gray-800 truncate">{appointment.client_name}</span>
+              <span className="font-medium text-gray-800 truncate text-sm">{appointment.client_name}</span>
             </div>
-            
-            <div className="flex items-center gap-2 text-gray-600 min-w-0">
-              <MessageSquare className="w-4 h-4 flex-shrink-0" />
-              <span className="truncate">{appointment.client_phone}</span>
-            </div>
-
-            {appointment.status === 'completed' && (
-              <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
-                Concluído
-              </Badge>
-            )}
           </div>
           
-          {/* Segunda linha: Ações */}
-          <div className="flex justify-end">
+          {/* Segunda linha: Tipo de serviço + Ícones de ação */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2 min-w-0 flex-1">
+              <span className="text-xs text-gray-600 truncate">{appointment.service_name}</span>
+              {appointment.status === 'completed' && (
+                <Badge className="bg-green-100 text-green-800 border-green-200 text-xs">
+                  Concluído
+                </Badge>
+              )}
+            </div>
+            
             <AppointmentActions
               appointment={appointment}
               onWhatsAppClick={onWhatsAppClick}
@@ -107,7 +104,7 @@ const AppointmentCard = ({
       </div>
       
       {index < totalAppointments - 1 && (
-        <Separator className="my-2" />
+        <Separator className="my-1" />
       )}
     </div>
   );
