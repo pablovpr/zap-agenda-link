@@ -183,11 +183,14 @@ export const createAppointment = async (
     const selectedService = services?.find(s => s.id === formData.selectedService);
     const selectedProfessional = professionals?.find(p => p.id === formData.selectedProfessional);
 
+    // CORREÇÃO CRÍTICA: Normalizar telefone no fluxo público também
+    const normalizedClientPhone = formData.clientPhone.replace(/\D/g, '');
+    
     // Criar dados do agendamento
     const appointmentData: AppointmentData = {
       company_id: companySettings.company_id,
       client_name: formData.clientName,
-      client_phone: formData.clientPhone,
+      client_phone: normalizedClientPhone, // CORREÇÃO CRÍTICA: Telefone normalizado
       client_email: formData.clientEmail,
       service_id: formData.selectedService,
       professional_id: formData.selectedProfessional,
@@ -350,24 +353,27 @@ const createAppointmentOriginal = async (appointmentData: AppointmentData) => {
 
     // Se não tem client_id, criar ou buscar cliente
     if (!clientId && appointmentData.client_name && appointmentData.client_phone) {
-      // Primeiro, tentar encontrar cliente existente pelo telefone
+      // CORREÇÃO CRÍTICA: Normalizar telefone antes de buscar
+      const normalizedPhone = appointmentData.client_phone.replace(/\D/g, '');
+      
+      // Primeiro, tentar encontrar cliente existente pelo telefone normalizado
       const { data: existingClient } = await supabase
         .from('clients')
         .select('id')
         .eq('company_id', appointmentData.company_id)
-        .eq('phone', appointmentData.client_phone)
+        .eq('phone', normalizedPhone)
         .maybeSingle();
 
       if (existingClient) {
         clientId = existingClient.id;
       } else {
-        // Criar novo cliente
+        // Criar novo cliente com telefone normalizado
         const { data: newClient, error: clientError } = await supabase
           .from('clients')
           .insert({
             company_id: appointmentData.company_id,
             name: appointmentData.client_name,
-            phone: appointmentData.client_phone,
+            phone: normalizedPhone, // CORREÇÃO CRÍTICA: Usar telefone normalizado
             email: appointmentData.client_email || null
           })
           .select('id')
